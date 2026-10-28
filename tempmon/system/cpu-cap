@@ -1,0 +1,22 @@
+#!/bin/sh
+# cpu-cap            show the saved cap
+# cpu-cap 2.5        cap all cores at 2.5 GHz, boost off (saved, survives reboot)
+# cpu-cap off        no cap, boost back on
+# cpu-cap --apply    re-apply the saved cap (boot service)
+CONF=/etc/cpu-cap.conf
+CPU=/sys/devices/system/cpu/cpufreq
+case "$1" in
+  "") echo "cap: $(cat $CONF 2>/dev/null || echo off)  (max now $(($(cat $CPU/policy0/scaling_max_freq) / 1000)) MHz)"; exit 0 ;;
+  --apply) cap=$(cat $CONF 2>/dev/null || echo off) ;;
+  off|[0-9]|[0-9].[0-9]|[0-9].[0-9][0-9]) cap=$1 ;;
+  *) echo "usage: cpu-cap [GHz e.g. 2.5 | off]" >&2; exit 1 ;;
+esac
+# sudoers lets this script (and only this) run as root without a password
+[ "$(id -u)" = 0 ] || exec sudo "$0" "$@"
+[ "$1" = --apply ] || echo "$cap" > $CONF
+[ "$cap" = off ] && boost=1 || boost=0
+for p in $CPU/policy*; do echo $boost > $p/boost 2>/dev/null || true; done
+echo $boost > $CPU/boost 2>/dev/null || true
+khz=$(awk "BEGIN { printf \"%d\", $([ "$cap" = off ] && echo 99 || echo "$cap") * 1000000 }")
+# the kernel clamps this to the hardware min/max, so "off" just means "as high as it goes"
+for p in $CPU/policy*; do echo $khz > $p/scaling_max_freq; done

@@ -1,0 +1,11 @@
+[Unit]
+Description=Apply CPU frequency cap from /etc/cpu-cap.conf
+After=power-profiles-daemon.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/cpu-cap --apply
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

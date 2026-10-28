@@ -1,0 +1,7 @@
+{
+  "uuid": "fps-probe@itzzsuperrr",
+  "name": "FPS Probe",
+  "description": "Counts frames per window and writes them to $XDG_RUNTIME_DIR/fps-probe.json for tempmon.",
+  "shell-version": ["46"],
+  "version": 1
+}

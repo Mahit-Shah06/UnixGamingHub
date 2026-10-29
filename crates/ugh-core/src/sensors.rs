@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
+use crate::names::{friendly_name, name_gpus, number_drives};
 
 const TYPES: [(&str, f64, &str); 5] = [
     ("temp", 1000.0, "°C"),
@@ -11,6 +12,7 @@ const TYPES: [(&str, f64, &str); 5] = [
 const DEVICE_DIR: &str = "/sys/class/hwmon";
 
 pub struct Sensor {
+    pub label: String,
     pub device: String,
     pub path: PathBuf,
     pub scale: f64,
@@ -24,16 +26,22 @@ pub fn sensor_names() -> Option<Vec<Sensor>> {
         let Ok(entry) = entry else {continue};
         let folder = entry.path();
 
-        let device = fs::read_to_string(folder.join("name")).ok()?.trim().to_string(); 
+        let device = friendly_name(fs::read_to_string(folder.join("name")).ok()?.trim());
 
         for file in fs::read_dir(&folder).ok()? {
             let path = file.ok()?.path();
             let file_name = path.file_name()?.to_string_lossy().to_string();
 
+            let base = file_name.split('_').next()?;
+            let label = match fs::read_to_string(base) {
+                Ok(text) => text.trim().to_string(),
+                Err(_) => base.to_string(),
+            };
+
             if file_name.ends_with("_input") || file_name.ends_with("_average") {
                 for (prefix, scale, unit) in TYPES {
                     if file_name.starts_with(prefix) {
-                        sensors.push(Sensor { device: device.clone(), path: path.clone(), scale, unit });
+                        sensors.push(Sensor {label: label.clone(), device: device.clone(), path: path.clone(), scale, unit });
                         break;
                     }
                 }
@@ -41,6 +49,8 @@ pub fn sensor_names() -> Option<Vec<Sensor>> {
         }
     }
 
+    name_gpus(&mut sensors);
+    number_drives(&mut sensors);
     Some(sensors)
 }
 

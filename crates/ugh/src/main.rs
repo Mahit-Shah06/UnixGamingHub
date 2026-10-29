@@ -3,7 +3,7 @@ fn main() {
         Some(sensors) => {
             for s in sensors {
                 match s.read() {
-                    Some(v) => println!("{}  {:.1} {}", s.device, v, s.unit),
+                    Some(v) => println!("{}  {}  {:.1} {}", s.device, s.label, v, s.unit),
                     None => println!("{} ?", s.device),
                 }
             }

@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""dendo-ugh — local editor for plan/dendro.json.
+
+  dendo-ugh          start the server if needed, open the page
+  dendo-ugh serve    run the server in the foreground
+  dendo-ugh stop     stop the background server
+  dendo-ugh status   print whether it is running
+"""
+import json
+import os
+import signal
+import subprocess
+import sys
+import time
+import urllib.request
+import webbrowser
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+PLAN = HERE / "dendro.json"
+PAGE = HERE / "dendro.html"
+HOST = "127.0.0.1"
+PORT = int(os.environ.get("DENDO_PORT", "8791"))
+URL = f"http://{HOST}:{PORT}/"
+RUN = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "dendo-ugh"
+PIDFILE = RUN / "pid"
+LOG = RUN / "log"
+# Host check blocks DNS rebinding; a custom header on POST forces a CORS
+# preflight we never answer, so other sites can't write the plan.
+ALLOWED_HOSTS = {f"{HOST}:{PORT}", f"localhost:{PORT}"}
+
+
+def mtime():
+    try:
+        return str(PLAN.stat().st_mtime_ns)
+    except FileNotFoundError:
+        return None
+
+
+def read_plan():
+    try:
+        return json.loads(PLAN.read_text())
+    except FileNotFoundError:
+        return {"version": 1, "lanes": [], "root": {
+            "id": "UGH", "title": "UnixGamingHub", "status": "todo", "lane": None,
+            "critical": False, "deps": [], "notes": "", "children": []}}
+
+
+def write_plan(plan):
+    tmp = PLAN.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n")
+    os.replace(tmp, PLAN)
+
+
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self, *args):
+        pass
+
+    def send_json(self, code, body):
+        data = json.dumps(body).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def host_ok(self):
+        if self.headers.get("Host") in ALLOWED_HOSTS:
+            return True
+        self.send_json(403, {"error": "bad host"})
+        return False
+
+    def do_GET(self):
+        if not self.host_ok():
+            return
+        if self.path == "/":
+            data = PAGE.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+        elif self.path == "/api/plan":
+            self.send_json(200, {"mtime": mtime(), "plan": read_plan()})
+        elif self.path == "/api/mtime":
+            self.send_json(200, {"mtime": mtime()})
+        elif self.path == "/api/ping":
+            self.send_json(200, {"app": "dendo-ugh"})
+        else:
+            self.send_json(404, {"error": "not found"})
+
+    def do_POST(self):
+        if not self.host_ok():
+            return
+        if self.path != "/api/plan" or self.headers.get("X-Dendo") != "1":
+            self.send_json(403, {"error": "forbidden"})
+            return
+        try:
+            body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))))
+            plan = body["plan"]
+            if not isinstance(plan.get("root"), dict):
+                raise ValueError("plan has no root")
+        except (ValueError, KeyError, TypeError) as e:
+            self.send_json(400, {"error": str(e)})
+            return
+        if body.get("base") != mtime():
+            self.send_json(409, {"error": "changed on disk", "mtime": mtime()})
+            return
+        write_plan(plan)
+        self.send_json(200, {"mtime": mtime()})
+
+
+def running():
+    try:
+        with urllib.request.urlopen(URL + "api/ping", timeout=0.5) as r:
+            return json.load(r).get("app") == "dendo-ugh"
+    except OSError:
+        return False
+
+
+def serve():
+    RUN.mkdir(parents=True, exist_ok=True)
+    PIDFILE.write_text(str(os.getpid()))
+    server = ThreadingHTTPServer((HOST, PORT), Handler)
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    try:
+        server.serve_forever()
+    finally:
+        PIDFILE.unlink(missing_ok=True)
+
+
+def start():
+    if not running():
+        RUN.mkdir(parents=True, exist_ok=True)
+        with open(LOG, "ab") as log:
+            subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "serve"],
+                             stdin=subprocess.DEVNULL, stdout=log, stderr=log,
+                             start_new_session=True)
+        for _ in range(30):
+            if running():
+                break
+            time.sleep(0.1)
+        else:
+            sys.exit(f"dendo-ugh: server didn't start, see {LOG}")
+    print(URL)
+    webbrowser.open(URL)
+
+
+def stop():
+    try:
+        os.kill(int(PIDFILE.read_text()), signal.SIGTERM)
+        print("stopped")
+    except (FileNotFoundError, ProcessLookupError, ValueError):
+        print("not running")
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "open"
+    if cmd == "open":
+        start()
+    elif cmd == "serve":
+        serve()
+    elif cmd == "stop":
+        stop()
+    elif cmd == "status":
+        print(f"running at {URL}" if running() else "not running")
+    else:
+        sys.exit(__doc__)
+
+
+if __name__ == "__main__":
+    main()

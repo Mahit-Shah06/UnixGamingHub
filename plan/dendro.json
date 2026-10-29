@@ -1,0 +1,767 @@
+{
+  "version": 1,
+  "updated": "2026-10-29T00:00:00Z",
+  "lanes": [
+    {
+      "id": "core",
+      "name": "Core path",
+      "color": "#6aa9ff"
+    },
+    {
+      "id": "sensors",
+      "name": "Sensors",
+      "color": "#4fd1a5"
+    },
+    {
+      "id": "control",
+      "name": "Control",
+      "color": "#ff9f5a"
+    },
+    {
+      "id": "games",
+      "name": "Games & stores",
+      "color": "#c084fc"
+    },
+    {
+      "id": "overlay",
+      "name": "Overlay",
+      "color": "#f472b6"
+    },
+    {
+      "id": "io",
+      "name": "Input & audio",
+      "color": "#facc15"
+    },
+    {
+      "id": "later",
+      "name": "Later",
+      "color": "#94a3b8"
+    }
+  ],
+  "root": {
+    "id": "UGH",
+    "title": "UnixGamingHub",
+    "status": "todo",
+    "lane": null,
+    "critical": false,
+    "deps": [],
+    "notes": "Lightweight, very customisable Linux gaming hub. Frontends: CLI, tray popup, on-demand GUI. Everything local; nothing to the cloud.",
+    "children": [
+      {
+        "id": "A",
+        "title": "Foundation",
+        "status": "todo",
+        "lane": "core",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "A1",
+            "title": "Workspace layout",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "Cargo workspace: ugh-core, ugh-daemon, ugh-helper, ugh (CLI), GUI. tempmon/ stays untouched.",
+            "children": []
+          },
+          {
+            "id": "A2",
+            "title": "Capability model",
+            "status": "todo",
+            "lane": null,
+            "critical": true,
+            "deps": [],
+            "notes": "Every control reports Supported / NeedsSetup(how) / Locked(why) / Unsupported(why). GUI shows every control; unsupported ones are grayed out with the reason, never hidden.",
+            "children": []
+          },
+          {
+            "id": "A3",
+            "title": "Device discovery",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "A2"
+            ],
+            "notes": "Scan sysfs, hwmon, drm, hidraw, WMI GUIDs, DMI board id -> inventory.",
+            "children": []
+          },
+          {
+            "id": "A4",
+            "title": "Persistence",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "TOML settings, SQLite history. All local.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "B",
+        "title": "Sensors",
+        "status": "todo",
+        "lane": "sensors",
+        "critical": false,
+        "deps": [
+          "A3"
+        ],
+        "notes": "",
+        "children": [
+          {
+            "id": "B1",
+            "title": "CPU",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "k10temp, /proc/stat, cpufreq, RAPL energy_uj (root to read).",
+            "children": []
+          },
+          {
+            "id": "B2",
+            "title": "GPUs",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "dGPU card1 / hwmon9, iGPU card2 / hwmon10.",
+            "children": []
+          },
+          {
+            "id": "B3",
+            "title": "Platform",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "hp hwmon fans, platform_profile, AC/battery.",
+            "children": []
+          },
+          {
+            "id": "B4",
+            "title": "Other",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "NVMe, spd5118 RAM, mt7921 Wi-Fi.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "C",
+        "title": "Control",
+        "status": "todo",
+        "lane": "control",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "C1",
+            "title": "Privilege model",
+            "status": "todo",
+            "lane": null,
+            "critical": true,
+            "deps": [
+              "A2"
+            ],
+            "notes": "Root helper, polkit, whitelist of actions, safe limits, revert on crash.",
+            "children": []
+          },
+          {
+            "id": "C2",
+            "title": "CPU",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "C1",
+              "B1"
+            ],
+            "notes": "Governor, EPP, scaling_max_freq, boost. Later: SMU mailbox for wattage (RAPL is read-only on AMD).",
+            "children": []
+          },
+          {
+            "id": "C3",
+            "title": "GPU",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "C1",
+              "B2"
+            ],
+            "notes": "Perf level, pp_dpm_sclk. Danger zone: decode + upload soft PowerPlay table (card1 pp_table) to try raising the 120 W cap. SMU firmware is signed; vBIOS flashing not worth it. iGPU overdrive needs ppfeaturemask boot param.",
+            "children": []
+          },
+          {
+            "id": "C4",
+            "title": "Platform",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "C1",
+              "B3"
+            ],
+            "notes": "platform_profile cool/balanced/performance, hp-wmi pwm1_enable (max/auto fan).",
+            "children": []
+          },
+          {
+            "id": "C5",
+            "title": "Lighting",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "C1"
+            ],
+            "notes": "4-zone keyboard via HP BIOS WMI GUID 5FB7F034... -> own kernel module. Mouse 30fa:1440 via hidraw; protocol reverse-engineered with usbmon/Wireshark.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "D",
+        "title": "Games",
+        "status": "todo",
+        "lane": "games",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "D1",
+            "title": "Running-game detection",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "A3"
+            ],
+            "notes": "Processes, Proton SteamAppId, window titles (tempmon has a GNOME-only version).",
+            "children": []
+          },
+          {
+            "id": "D2",
+            "title": "Library scan",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "Local Steam libraries, .desktop files, other launchers' data.",
+            "children": []
+          },
+          {
+            "id": "D3",
+            "title": "Launcher",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "D2"
+            ],
+            "notes": "Env vars, gamemode, overlay injection, Steam account switch.",
+            "children": []
+          },
+          {
+            "id": "D4",
+            "title": "Profiles",
+            "status": "todo",
+            "lane": null,
+            "critical": true,
+            "deps": [
+              "D1",
+              "F3"
+            ],
+            "notes": "Per game: CPU/GPU, lighting, input, audio, launch options. Apply on start, revert on exit.",
+            "children": []
+          },
+          {
+            "id": "D5",
+            "title": "Sessions & stats",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "D1",
+              "A4"
+            ],
+            "notes": "Playtime, avg / 1%-low FPS, peak temps.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "E",
+        "title": "Overlay & FPS",
+        "status": "todo",
+        "lane": "overlay",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "E1",
+            "title": "Frame timing",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "Own Vulkan layer first, OpenGL later.",
+            "children": []
+          },
+          {
+            "id": "E2",
+            "title": "HUD rendering",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "E1"
+            ],
+            "notes": "Draw inside the game.",
+            "children": []
+          },
+          {
+            "id": "E3",
+            "title": "Layer <-> daemon link",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "E1",
+              "F1"
+            ],
+            "notes": "Shared memory.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "F",
+        "title": "Daemon & IPC",
+        "status": "todo",
+        "lane": "core",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "F1",
+            "title": "Lifecycle",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "A1"
+            ],
+            "notes": "systemd user service, tiny CPU budget.",
+            "children": []
+          },
+          {
+            "id": "F2",
+            "title": "Protocol",
+            "status": "todo",
+            "lane": null,
+            "critical": true,
+            "deps": [
+              "F1",
+              "A2"
+            ],
+            "notes": "Unix socket, versioned JSON, request/response + subscriptions.",
+            "children": []
+          },
+          {
+            "id": "F3",
+            "title": "Event bus",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "F2"
+            ],
+            "notes": "game_started, temp_high, profile_applied ...",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "G",
+        "title": "Frontends",
+        "status": "todo",
+        "lane": "core",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "G1",
+            "title": "CLI",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "F2"
+            ],
+            "notes": "",
+            "children": []
+          },
+          {
+            "id": "G2",
+            "title": "Tray popup",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "F2"
+            ],
+            "notes": "StatusNotifierItem; GNOME needs the AppIndicator extension.",
+            "children": []
+          },
+          {
+            "id": "G3",
+            "title": "Full GUI",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "F2"
+            ],
+            "notes": "On-demand. Rich library UI (covers, animation). Leaning Tauri. Grayed-out controls with reasons.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "H",
+        "title": "Extensibility",
+        "status": "todo",
+        "lane": "later",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "H1",
+            "title": "Plugin API",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "F3"
+            ],
+            "notes": "Scripts in any language get events as JSON, send commands back.",
+            "children": []
+          },
+          {
+            "id": "H2",
+            "title": "Theming",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "G3"
+            ],
+            "notes": "GUI + overlay layouts.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "I",
+        "title": "Distribution",
+        "status": "todo",
+        "lane": "later",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "I1",
+            "title": "Packages",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "deb, AUR, rpm.",
+            "children": []
+          },
+          {
+            "id": "I2",
+            "title": "System files",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "C1"
+            ],
+            "notes": "udev, polkit, systemd units.",
+            "children": []
+          },
+          {
+            "id": "I3",
+            "title": "Docs & licence",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "MIT. CONTRIBUTING: PRs by invitation only.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "J",
+        "title": "Stores & accounts",
+        "status": "todo",
+        "lane": "games",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "J1",
+            "title": "Account vault",
+            "status": "todo",
+            "lane": null,
+            "critical": true,
+            "deps": [
+              "A4"
+            ],
+            "notes": "Multiple accounts per store (2+ each for Steam, Epic, GOG). Tokens in the system keyring, never passwords. Local only.",
+            "children": []
+          },
+          {
+            "id": "J2",
+            "title": "Steam",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "J1",
+              "J5"
+            ],
+            "notes": "Hardest. Own client of Steam's network protocol. Games need the official client logged into the owning account -> switch on launch.",
+            "children": []
+          },
+          {
+            "id": "J3",
+            "title": "Epic",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "J1",
+              "J5"
+            ],
+            "notes": "OAuth login, library, manifests. No official API (ToS gray area).",
+            "children": []
+          },
+          {
+            "id": "J4",
+            "title": "GOG",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "J1",
+              "J5"
+            ],
+            "notes": "OAuth, DRM-free installers. Easiest -> good first store.",
+            "children": []
+          },
+          {
+            "id": "J5",
+            "title": "Download/install engine",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "Chunks, resume, verify, update. Shared by J2-J4.",
+            "children": []
+          },
+          {
+            "id": "J6",
+            "title": "Metadata & art",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "Covers, hero images, descriptions; cached locally.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "K",
+        "title": "Input",
+        "status": "todo",
+        "lane": "io",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "K1",
+            "title": "Input layer",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "C1"
+            ],
+            "notes": "evdev grab -> transform -> uinput virtual device. Works on any distro/compositor.",
+            "children": []
+          },
+          {
+            "id": "K2",
+            "title": "Mouse",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "K1"
+            ],
+            "notes": "Per game, user picks: DPI on the mouse (needs protocol, see C5), OS pointer speed (per desktop), or raw scaling via K1. Unavailable methods grayed out.",
+            "children": []
+          },
+          {
+            "id": "K3",
+            "title": "Keyboard",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "K1"
+            ],
+            "notes": "Remaps, macros.",
+            "children": []
+          },
+          {
+            "id": "K4",
+            "title": "Gamepad",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "K1"
+            ],
+            "notes": "Remaps, deadzones; mind Steam Input conflicts.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "L",
+        "title": "Audio",
+        "status": "todo",
+        "lane": "io",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "L1",
+            "title": "Per-game volume",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "PipeWire streams.",
+            "children": []
+          },
+          {
+            "id": "L2",
+            "title": "Per-game output device",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "",
+            "children": []
+          },
+          {
+            "id": "L3",
+            "title": "Per-game EQ",
+            "status": "todo",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "PipeWire filter-chain.",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "M",
+        "title": "Ideas (unsorted)",
+        "status": "idea",
+        "lane": "later",
+        "critical": false,
+        "deps": [],
+        "notes": "",
+        "children": [
+          {
+            "id": "M1",
+            "title": "Screenshots / recording",
+            "status": "idea",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "",
+            "children": []
+          },
+          {
+            "id": "M2",
+            "title": "Crosshair overlay",
+            "status": "idea",
+            "lane": null,
+            "critical": false,
+            "deps": [
+              "E2"
+            ],
+            "notes": "",
+            "children": []
+          },
+          {
+            "id": "M3",
+            "title": "Discord rich presence",
+            "status": "idea",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "Discord's local IPC socket; stays local.",
+            "children": []
+          },
+          {
+            "id": "M4",
+            "title": "Ping / network stats",
+            "status": "idea",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "",
+            "children": []
+          },
+          {
+            "id": "M5",
+            "title": "Game mode: pause background apps",
+            "status": "idea",
+            "lane": null,
+            "critical": false,
+            "deps": [],
+            "notes": "",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}

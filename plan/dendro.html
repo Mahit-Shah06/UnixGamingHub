@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UGH plan</title>
+<style>
+:root {
+  --bg: #0e1015; --panel: #151820; --raise: #1c2029; --line: #2a2f3b; --text: #e7e9ef; --muted: #8a92a6;
+  --accent: #6aa9ff; --warn: #f59e0b; --bad: #ef4444;
+  --idea: #a78bfa; --todo: #6b7280; --doing: #3b82f6; --blocked: #ef4444; --done: #22c55e;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, sans-serif; }
+body { display: grid; grid-template-rows: auto auto 1fr; grid-template-columns: 1fr 340px; height: 100vh; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: var(--raise); border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button.on { border-color: var(--accent); color: var(--accent); }
+button:disabled { opacity: .4; cursor: default; }
+input, select, textarea { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; width: 100%; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+header { grid-column: 1 / 3; display: flex; gap: 6px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel); }
+header h1 { font-size: 14px; margin: 0 10px 0 0; font-weight: 600; letter-spacing: .02em; }
+header .sep { width: 1px; align-self: stretch; background: var(--line); margin: 0 4px; }
+header #search { width: 220px; }
+header #save { margin-left: auto; color: var(--muted); font-size: 12px; min-width: 90px; text-align: right; }
+header #save.bad { color: var(--bad); }
+header #save.warn { color: var(--warn); }
+
+#banner { grid-column: 1 / 3; display: none; gap: 8px; align-items: center; padding: 7px 12px; background: #3a2a0c; border-bottom: 1px solid var(--warn); }
+#banner.show { display: flex; }
+
+#banner { grid-row: 2; }
+#stage { grid-row: 3; grid-column: 1; overflow: auto; position: relative; }
+#sizer { position: relative; }
+#canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+#links { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+#links .tree { fill: none; stroke: var(--line); stroke-width: 1.5; }
+#links .dep { fill: none; stroke: var(--warn); stroke-width: 1.2; stroke-dasharray: 4 4; opacity: .25; }
+#links .dep.hot { opacity: .95; stroke-width: 1.6; }
+
+.node { position: absolute; height: 26px; width: 196px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 4px;
+  background: var(--raise); border: 1px solid var(--line); border-left: 4px solid var(--lane, var(--line)); border-radius: 6px;
+  cursor: pointer; user-select: none; white-space: nowrap; }
+.node:hover { border-color: var(--muted); border-left-color: var(--lane, var(--muted)); }
+.node.sel { border-color: #fff; border-left-color: var(--lane, #fff); box-shadow: 0 0 0 2px #ffffff22; }
+.node.dim { opacity: .25; }
+.node.hit { box-shadow: 0 0 0 2px var(--accent); }
+.node .tog { width: 14px; color: var(--muted); text-align: center; flex: none; font-size: 10px; }
+.node .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--todo); }
+.node .id { color: var(--muted); font-size: 11px; flex: none; }
+.node .t { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.node .badge { color: var(--muted); font-size: 11px; flex: none; }
+.node .crit { color: var(--warn); flex: none; font-size: 11px; }
+.node.done .t { color: var(--muted); text-decoration: line-through; }
+.node.drop-inside { box-shadow: 0 0 0 2px var(--accent); }
+.node.drop-before { box-shadow: 0 -3px 0 0 var(--accent); }
+.node.drop-after { box-shadow: 0 3px 0 0 var(--accent); }
+.s-idea { background: var(--idea) !important; } .s-todo { background: var(--todo) !important; } .s-doing { background: var(--doing) !important; }
+.s-blocked { background: var(--blocked) !important; } .s-done { background: var(--done) !important; }
+
+aside { grid-row: 3; grid-column: 2; border-left: 1px solid var(--line); background: var(--panel); overflow: auto; padding: 14px; }
+aside h2 { font-size: 13px; margin: 0 0 10px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+aside label { display: block; color: var(--muted); font-size: 11px; margin: 12px 0 4px; text-transform: uppercase; letter-spacing: .05em; }
+aside textarea { min-height: 140px; resize: vertical; line-height: 1.45; }
+aside .row { display: flex; gap: 6px; }
+aside .row > * { flex: 1; }
+.statuses { display: flex; gap: 4px; flex-wrap: wrap; }
+.statuses button { display: flex; align-items: center; gap: 5px; }
+.statuses .dot { width: 8px; height: 8px; border-radius: 50%; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; background: var(--raise); border: 1px solid var(--line); border-radius: 12px; padding: 1px 4px 1px 8px; font-size: 12px; cursor: pointer; }
+.chip b { font-weight: 500; color: var(--muted); }
+.chip button { border: none; background: none; padding: 0 4px; color: var(--muted); }
+.chip.ro { padding-right: 8px; }
+.actions { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+.actions .del { margin-left: auto; color: var(--bad); }
+.err { color: var(--bad); font-size: 12px; margin-top: 4px; min-height: 1em; }
+.help { color: var(--muted); }
+.help kbd { background: var(--raise); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font: 11px ui-monospace, monospace; color: var(--text); }
+.help table { border-collapse: collapse; width: 100%; }
+.help td { padding: 3px 0; vertical-align: top; }
+.help td:first-child { white-space: nowrap; padding-right: 10px; }
+.legend { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; margin-bottom: 16px; }
+.legend .dot { width: 9px; height: 9px; border-radius: 50%; }
+.legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>UGH plan</h1>
+  <input id="search" placeholder="Search id, title, notes  ( / )" autocomplete="off">
+  <div class="sep"></div>
+  <button id="expand" title="Expand all">Expand</button>
+  <button id="collapse" title="Collapse to level 1">Collapse</button>
+  <div class="sep"></div>
+  <button id="deps" class="on" title="Show dependency lines">Deps</button>
+  <button id="lanes" class="on" title="Colour nodes by lane">Lanes</button>
+  <div class="sep"></div>
+  <button id="zout" title="Zoom out">−</button>
+  <button id="zreset" title="Reset zoom">100%</button>
+  <button id="zin" title="Zoom in">+</button>
+  <div class="sep"></div>
+  <button id="undo" title="Undo (Ctrl+Z)">Undo</button>
+  <button id="redo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+  <span id="save">loading…</span>
+</header>
+<div id="banner">
+  <span>The plan changed on disk while you had unsaved edits.</span>
+  <button id="takeDisk">Load disk version</button>
+  <button id="keepMine">Keep mine (overwrite disk)</button>
+</div>
+<main id="stage"><div id="sizer"><div id="canvas"><svg id="links"><defs>
+  <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L8,4 L0,8 z" fill="#f59e0b"></path></marker></defs>
+  <path class="tree"></path><g class="deps"></g></svg></div></div></main>
+<aside id="panel"></aside>
+
+<script>
+const STATUSES = ["idea", "todo", "doing", "blocked", "done"];
+const COL = 226, ROW = 34, NODE_W = 196, NODE_H = 26, PAD = 24;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
+let plan, index = new Map(), mtime = null;
+let rev = 0, savedRev = 0, saving = false, conflict = false, saveTimer = null;
+let selId = null, query = "", dragId = null;
+const undoStack = [], redoStack = [];
+let lastKey = null, lastAt = 0;
+
+// View state lives in the browser so expanding/collapsing doesn't churn the plan file.
+const ui = loadUi();
+function loadUi() {
+  try {
+    const v = JSON.parse(localStorage.getItem("dendo-ugh") || "{}");
+    return { collapsed: new Set(v.collapsed || []), deps: v.deps ?? true, lanes: v.lanes ?? true, zoom: v.zoom || 1, seeded: !!v.seeded };
+  } catch { return { collapsed: new Set(), deps: true, lanes: true, zoom: 1, seeded: false }; }
+}
+function saveUi() {
+  try { localStorage.setItem("dendo-ugh", JSON.stringify({ ...ui, collapsed: [...ui.collapsed] })); } catch {}
+}
+
+function reindex() {
+  index = new Map();
+  (function walk(n, parent, depth) {
+    n.children ||= []; n.deps ||= [];
+    index.set(n.id, { node: n, parent, depth });
+    n.children.forEach(c => walk(c, n, depth + 1));
+  })(plan.root, null, 0);
+}
+
+function laneColor(id) {
+  for (let e = index.get(id); e; e = e.parent && index.get(e.parent.id)) {
+    if (e.node.lane) return (plan.lanes || []).find(l => l.id === e.node.lane)?.color;
+  }
+  return null;
+}
+
+function isAncestor(a, b) {
+  for (let e = index.get(b); e && e.parent; e = index.get(e.parent.id)) if (e.parent.id === a) return true;
+  return false;
+}
+
+function matches(n) {
+  const q = query.toLowerCase();
+  return n.id.toLowerCase().includes(q) || n.title.toLowerCase().includes(q) || (n.notes || "").toLowerCase().includes(q);
+}
+
+// ---------- edits, undo, save ----------
+
+function mutate(fn, { key = null, panel = true } = {}) {
+  const now = Date.now();
+  if (!(key && key === lastKey && now - lastAt < 1500)) {
+    undoStack.push(JSON.stringify(plan));
+    if (undoStack.length > 200) undoStack.shift();
+  }
+  lastKey = key; lastAt = now;
+  redoStack.length = 0;
+  fn();
+  changed(panel);
+}
+
+function changed(panel = true) {
+  reindex();
+  if (selId && !index.has(selId)) selId = null;
+  rev++;
+  renderTree();
+  if (panel) renderPanel();
+  scheduleSave();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(JSON.stringify(plan));
+  plan = JSON.parse(undoStack.pop());
+  lastKey = null;
+  changed();
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(JSON.stringify(plan));
+  plan = JSON.parse(redoStack.pop());
+  lastKey = null;
+  changed();
+}
+
+function scheduleSave() {
+  setSave("unsaved", "warn");
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(save, 500);
+}
+
+async function save() {
+  if (conflict) return;
+  if (saving) { scheduleSave(); return; }
+  saving = true;
+  const r0 = rev;
+  try {
+    plan.updated = new Date().toISOString();
+    const r = await fetch("/api/plan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Dendo": "1" },
+      body: JSON.stringify({ base: mtime, plan }),
+    });
+    const j = await r.json();
+    if (r.status === 409) { showConflict(); return; }
+    if (!r.ok) throw new Error(j.error || r.status);
+    mtime = j.mtime;
+    savedRev = r0;
+    if (rev === savedRev) setSave("saved");
+  } catch (e) {
+    setSave("save failed: " + e.message, "bad");
+  } finally {
+    saving = false;
+  }
+}
+
+async function load() {
+  const j = await (await fetch("/api/plan")).json();
+  plan = j.plan; mtime = j.mtime;
+  undoStack.length = 0; redoStack.length = 0;
+  reindex();
+  rev = savedRev = 0; conflict = false;
+  $("#banner").classList.remove("show");
+  if (!ui.seeded) {
+    plan.root.children.forEach(c => c.children.length && ui.collapsed.add(c.id));
+    ui.seeded = true; saveUi();
+  }
+  if (selId && !index.has(selId)) selId = null;
+  renderTree(); renderPanel();
+  setSave("saved");
+}
+
+function showConflict() {
+  conflict = true;
+  $("#banner").classList.add("show");
+  setSave("conflict", "bad");
+}
+
+function setSave(text, cls = "") {
+  const el = $("#save");
+  el.textContent = text;
+  el.className = cls;
+  $("#undo").disabled = !undoStack.length;
+  $("#redo").disabled = !redoStack.length;
+}
+
+// Picks up edits made to dendro.json outside the page (e.g. by Claude).
+setInterval(async () => {
+  if (saving || !plan) return;
+  try {
+    const j = await (await fetch("/api/mtime")).json();
+    if (j.mtime === mtime) return;
+    if (rev === savedRev) load();
+    else if (!conflict) showConflict();
+  } catch {
+    setSave("server offline", "bad");
+  }
+}, 2000);
+
+// ---------- tree operations ----------
+
+function newId(parent) {
+  if (parent === plan.root) {
+    for (const c of "ABCDEFGHIJKLMNOPQRSTUVWXYZ") if (!index.has(c)) return c;
+  }
+  const sep = /^[A-Z]$/.test(parent.id) ? "" : ".";
+  for (let i = 1; ; i++) if (!index.has(parent.id + sep + i)) return parent.id + sep + i;
+}
+
+function blank(id) {
+  return { id, title: "New node", status: "todo", lane: null, critical: false, deps: [], notes: "", children: [] };
+}
+
+function addChild(id) {
+  const p = index.get(id).node;
+  const n = blank(newId(p));
+  mutate(() => { p.children.push(n); ui.collapsed.delete(p.id); saveUi(); });
+  select(n.id, true);
+}
+
+function addSibling(id) {
+  const e = index.get(id);
+  if (!e.parent) return addChild(id);
+  const n = blank(newId(e.parent));
+  mutate(() => e.parent.children.splice(e.parent.children.indexOf(e.node) + 1, 0, n));
+  select(n.id, true);
+}
+
+function remove(id) {
+  const e = index.get(id);
+  if (!e.parent) return;
+  const gone = new Set();
+  (function walk(n) { gone.add(n.id); n.children.forEach(walk); })(e.node);
+  const sib = e.parent.children, i = sib.indexOf(e.node);
+  const next = sib[i + 1] || sib[i - 1] || e.parent;
+  mutate(() => {
+    sib.splice(i, 1);
+    index.forEach(({ node }) => { node.deps = node.deps.filter(d => !gone.has(d)); });
+  });
+  select(next.id);
+}
+
+function move(src, tgt, zone) {
+  if (src === tgt || isAncestor(src, tgt)) return;
+  mutate(() => {
+    const s = index.get(src);
+    s.parent.children.splice(s.parent.children.indexOf(s.node), 1);
+    const t = index.get(tgt);
+    if (zone === "inside") {
+      t.node.children.push(s.node);
+      ui.collapsed.delete(tgt); saveUi();
+    } else {
+      const sib = t.parent.children, i = sib.indexOf(t.node);
+      sib.splice(zone === "before" ? i : i + 1, 0, s.node);
+    }
+  });
+}
+
+function renameId(oldId, newId) {
+  mutate(() => {
+    index.get(oldId).node.id = newId;
+    index.forEach(({ node }) => { node.deps = node.deps.map(d => d === oldId ? newId : d); });
+    if (ui.collapsed.delete(oldId)) { ui.collapsed.add(newId); saveUi(); }
+    selId = newId;
+  });
+}
+
+function toggle(id) {
+  if (!index.get(id).node.children.length) return;
+  ui.collapsed.has(id) ? ui.collapsed.delete(id) : ui.collapsed.add(id);
+  saveUi(); renderTree();
+}
+
+function visibleAncestor(id, pos) {
+  for (let e = index.get(id); e; e = e.parent && index.get(e.parent.id)) if (pos.has(e.node.id)) return e.node.id;
+  return null;
+}
+
+// ---------- rendering ----------
+
+function layout() {
+  const pos = new Map();
+  let row = 0, maxDepth = 0;
+  (function place(n, d) {
+    maxDepth = Math.max(maxDepth, d);
+    const kids = query || !ui.collapsed.has(n.id) ? n.children : [];
+    if (!kids.length) { pos.set(n.id, { x: PAD + d * COL, y: PAD + row++ * ROW }); return; }
+    kids.forEach(c => place(c, d + 1));
+    const a = pos.get(kids[0].id).y, b = pos.get(kids[kids.length - 1].id).y;
+    pos.set(n.id, { x: PAD + d * COL, y: (a + b) / 2 });
+  })(plan.root, 0);
+  return { pos, w: PAD * 2 + maxDepth * COL + NODE_W, h: PAD * 2 + row * ROW };
+}
+
+function renderTree() {
+  const { pos, w, h } = layout();
+  const canvas = $("#canvas"), svg = $("#links");
+  canvas.style.width = w + "px"; canvas.style.height = h + "px";
+  canvas.style.transform = `scale(${ui.zoom})`;
+  $("#sizer").style.width = w * ui.zoom + "px"; $("#sizer").style.height = h * ui.zoom + "px";
+  svg.setAttribute("width", w); svg.setAttribute("height", h);
+  $("#zreset").textContent = Math.round(ui.zoom * 100) + "%";
+  $("#deps").classList.toggle("on", ui.deps);
+  $("#lanes").classList.toggle("on", ui.lanes);
+
+  canvas.querySelectorAll(".node").forEach(el => el.remove());
+  const frag = document.createDocumentFragment();
+  for (const [id, p] of pos) {
+    const { node: n, parent } = index.get(id);
+    const el = document.createElement("div");
+    el.className = "node" + (id === selId ? " sel" : "") + (n.status === "done" ? " done" : "");
+    if (query) el.classList.add(matches(n) ? "hit" : "dim");
+    el.style.left = p.x + "px"; el.style.top = p.y + "px";
+    const lc = ui.lanes && laneColor(id);
+    if (lc) el.style.setProperty("--lane", lc);
+    el.dataset.id = id;
+    el.title = n.title + (n.notes ? "\n\n" + n.notes : "");
+    const hidden = !query && ui.collapsed.has(id) && n.children.length;
+    el.innerHTML =
+      `<span class="tog">${n.children.length ? (hidden ? "▸" : "▾") : ""}</span>` +
+      `<span class="dot s-${esc(n.status)}"></span><span class="id">${esc(n.id)}</span>` +
+      `<span class="t">${esc(n.title)}</span>` +
+      (n.critical ? `<span class="crit" title="Critical">★</span>` : "") +
+      (hidden ? `<span class="badge">+${countDesc(n)}</span>` : "");
+    el.draggable = !!parent;
+    bindNode(el, id, !!parent);
+    frag.append(el);
+  }
+  canvas.append(frag);
+
+  let d = "";
+  for (const [id, p] of pos) {
+    const { parent } = index.get(id);
+    if (!parent) continue;
+    const pp = pos.get(parent.id);
+    const x1 = pp.x + NODE_W, y1 = pp.y + NODE_H / 2, x2 = p.x, y2 = p.y + NODE_H / 2, mx = (x1 + x2) / 2;
+    d += `M${x1},${y1}C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+  }
+  svg.querySelector(".tree").setAttribute("d", d);
+
+  const g = svg.querySelector(".deps");
+  g.innerHTML = "";
+  if (!ui.deps) return;
+  const seen = new Set();
+  index.forEach(({ node }) => {
+    const to = visibleAncestor(node.id, pos);
+    node.deps.forEach(dep => {
+      const from = visibleAncestor(dep, pos);
+      if (!from || !to || from === to || seen.has(from + ">" + to)) return;
+      seen.add(from + ">" + to);
+      const a = pos.get(from), b = pos.get(to);
+      const x1 = a.x + NODE_W, y1 = a.y + NODE_H / 2, y2 = b.y + NODE_H / 2;
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      // Forward deps enter the target's left edge; same-column or backward ones
+      // arc around the right side so they don't cut through the nodes.
+      if (b.x > a.x) {
+        const x2 = b.x;
+        path.setAttribute("d", `M${x1},${y1}C${x1 + 90},${y1} ${x2 - 90},${y2} ${x2 - 2},${y2}`);
+      } else {
+        const x2 = b.x + NODE_W, bulge = Math.max(x1, x2) + 24 + Math.min(120, Math.abs(y2 - y1) / 4);
+        path.setAttribute("d", `M${x1},${y1}C${bulge},${y1} ${bulge},${y2} ${x2 + 2},${y2}`);
+      }
+      path.setAttribute("class", "dep" + (selId && (from === selId || to === selId) ? " hot" : ""));
+      path.setAttribute("marker-end", "url(#arrow)");
+      g.append(path);
+    });
+  });
+}
+
+function countDesc(n) { return n.children.reduce((s, c) => s + 1 + countDesc(c), 0); }
+
+function bindNode(el, id, movable) {
+  el.addEventListener("click", e => {
+    if (e.target.classList.contains("tog")) { toggle(id); return; }
+    select(id);
+  });
+  el.addEventListener("dblclick", e => {
+    if (e.target.classList.contains("tog")) return;
+    select(id, true);
+  });
+  if (movable) {
+    el.addEventListener("dragstart", e => {
+      dragId = id;
+      e.dataTransfer.setData("text/plain", id);
+      e.dataTransfer.effectAllowed = "move";
+    });
+    el.addEventListener("dragend", () => { dragId = null; clearDrop(); });
+  }
+  el.addEventListener("dragover", e => {
+    if (!dragId || dragId === id || isAncestor(dragId, id)) return;
+    e.preventDefault();
+    clearDrop();
+    el.classList.add("drop-" + dropZone(e, el, id));
+  });
+  el.addEventListener("dragleave", () => clearDrop(el));
+  el.addEventListener("drop", e => {
+    e.preventDefault();
+    if (!dragId) return;
+    const zone = dropZone(e, el, id), src = dragId;
+    dragId = null; clearDrop();
+    move(src, id, zone);
+  });
+}
+
+function dropZone(e, el, id) {
+  if (!index.get(id).parent) return "inside";
+  const r = el.getBoundingClientRect(), f = (e.clientY - r.top) / r.height;
+  return f < 0.28 ? "before" : f > 0.72 ? "after" : "inside";
+}
+
+function clearDrop(only) {
+  (only ? [only] : document.querySelectorAll(".node")).forEach(el => el.classList.remove("drop-inside", "drop-before", "drop-after"));
+}
+
+function select(id, focusTitle = false) {
+  selId = id;
+  if (id) for (let e = index.get(id); e && e.parent; e = index.get(e.parent.id)) ui.collapsed.delete(e.parent.id);
+  saveUi();
+  renderTree(); renderPanel();
+  if (id) {
+    const el = document.querySelector(`.node[data-id="${CSS.escape(id)}"]`);
+    el?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    if (focusTitle) { const t = $("#f-title"); t.focus(); t.select(); }
+  }
+}
+
+function renderPanel() {
+  const p = $("#panel");
+  if (!selId) { p.innerHTML = helpHtml(); return; }
+  const n = index.get(selId).node;
+  const neededBy = [];
+  index.forEach(({ node }) => node.deps.includes(n.id) && neededBy.push(node.id));
+  const chip = (id, removable) => {
+    const t = index.get(id)?.node.title ?? "?";
+    return `<span class="chip${removable ? "" : " ro"}" data-go="${esc(id)}"><b>${esc(id)}</b>${esc(t)}` +
+      (removable ? `<button data-rm="${esc(id)}" title="Remove">×</button>` : "") + `</span>`;
+  };
+  const options = [...index.keys()].filter(id => id !== n.id && !n.deps.includes(id))
+    .map(id => `<option value="${esc(id)}">${esc(id)} — ${esc(index.get(id).node.title)}</option>`).join("");
+  p.innerHTML = `
+    <h2>Node</h2>
+    <div class="row">
+      <div style="flex:0 0 96px"><label>Id</label><input id="f-id" value="${esc(n.id)}" spellcheck="false"></div>
+      <div><label>Title</label><input id="f-title" value="${esc(n.title)}"></div>
+    </div>
+    <div class="err" id="f-err"></div>
+    <label>Status</label>
+    <div class="statuses">${STATUSES.map(s =>
+      `<button data-status="${s}" class="${n.status === s ? "on" : ""}"><span class="dot s-${s}"></span>${s}</button>`).join("")}</div>
+    <div class="row">
+      <div><label>Lane</label><select id="f-lane"><option value="">inherit</option>${(plan.lanes || []).map(l =>
+        `<option value="${esc(l.id)}" ${n.lane === l.id ? "selected" : ""}>${esc(l.name)}</option>`).join("")}</select></div>
+      <div style="flex:0 0 auto"><label>&nbsp;</label><button id="f-crit" class="${n.critical ? "on" : ""}">★ critical</button></div>
+    </div>
+    <label>Depends on</label>
+    <div class="chips">${n.deps.map(d => chip(d, true)).join("") || `<span class="help">nothing</span>`}</div>
+    <select id="f-adddep"><option value="">+ add dependency…</option>${options}</select>
+    <label>Needed by</label>
+    <div class="chips">${neededBy.map(d => chip(d, false)).join("") || `<span class="help">nothing</span>`}</div>
+    <label>Notes</label>
+    <textarea id="f-notes" spellcheck="true">${esc(n.notes || "")}</textarea>
+    <div class="actions">
+      <button id="a-child">+ child <span class="help">Tab</span></button>
+      <button id="a-sib">+ sibling <span class="help">Enter</span></button>
+      ${index.get(n.id).parent ? `<button id="a-del" class="del">Delete</button>` : ""}
+    </div>`;
+
+  $("#f-title").addEventListener("input", e => mutate(() => { n.title = e.target.value; }, { key: "title:" + n.id, panel: false }));
+  $("#f-notes").addEventListener("input", e => mutate(() => { n.notes = e.target.value; }, { key: "notes:" + n.id, panel: false }));
+  $("#f-id").addEventListener("change", e => {
+    const v = e.target.value.trim();
+    if (v === n.id) return;
+    if (!/^[A-Za-z0-9._-]+$/.test(v)) { $("#f-err").textContent = "Id: letters, digits, . _ - only"; return; }
+    if (index.has(v)) { $("#f-err").textContent = `Id "${v}" is taken`; return; }
+    renameId(n.id, v);
+  });
+  p.querySelectorAll("[data-status]").forEach(b => b.addEventListener("click", () => mutate(() => { n.status = b.dataset.status; })));
+  $("#f-lane").addEventListener("change", e => mutate(() => { n.lane = e.target.value || null; }));
+  $("#f-crit").addEventListener("click", () => mutate(() => { n.critical = !n.critical; }));
+  $("#f-adddep").addEventListener("change", e => e.target.value && mutate(() => { n.deps.push(e.target.value); }));
+  p.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", e => {
+    e.stopPropagation();
+    mutate(() => { n.deps = n.deps.filter(d => d !== b.dataset.rm); });
+  }));
+  p.querySelectorAll("[data-go]").forEach(c => c.addEventListener("click", () => select(c.dataset.go)));
+  $("#a-child").addEventListener("click", () => addChild(n.id));
+  $("#a-sib").addEventListener("click", () => addSibling(n.id));
+  $("#a-del")?.addEventListener("click", () => remove(n.id));
+}
+
+function helpHtml() {
+  const counts = Object.fromEntries(STATUSES.map(s => [s, 0]));
+  index.forEach(({ node }) => counts[node.status] = (counts[node.status] || 0) + 1);
+  return `
+    <h2>Status</h2>
+    <div class="legend">${STATUSES.map(s => `<span class="dot s-${s}"></span><span>${s}</span><span class="help">${counts[s]}</span>`).join("")}</div>
+    <h2>Lanes</h2>
+    <div class="legend">${(plan.lanes || []).map(l => `<span class="sw" style="background:${esc(l.color)}"></span><span>${esc(l.name)}</span><span></span>`).join("")}</div>
+    <h2>Controls</h2>
+    <div class="help"><table>
+      <tr><td>Click</td><td>select</td></tr>
+      <tr><td>Double-click</td><td>rename</td></tr>
+      <tr><td>Drag onto node</td><td>middle = make child, top/bottom edge = put before/after</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>add child</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>add sibling</td></tr>
+      <tr><td><kbd>Del</kbd></td><td>delete (undo brings it back)</td></tr>
+      <tr><td><kbd>Space</kbd></td><td>expand / collapse</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>parent / child / siblings</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>undo, add <kbd>Shift</kbd> to redo</td></tr>
+      <tr><td><kbd>/</kbd> · <kbd>Esc</kbd></td><td>search · deselect</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+wheel</td><td>zoom</td></tr>
+    </table>
+    <p>Saves automatically to <code>plan/dendro.json</code>. Edits made to the file on disk show up here within 2 s.</p></div>`;
+}
+
+// ---------- toolbar & keys ----------
+
+function setZoom(z) { ui.zoom = Math.min(2, Math.max(0.4, Math.round(z * 10) / 10)); saveUi(); renderTree(); }
+
+$("#search").addEventListener("input", e => { query = e.target.value.trim(); renderTree(); });
+$("#expand").addEventListener("click", () => { ui.collapsed.clear(); saveUi(); renderTree(); });
+$("#collapse").addEventListener("click", () => {
+  ui.collapsed = new Set(plan.root.children.filter(c => c.children.length).map(c => c.id));
+  saveUi(); renderTree();
+});
+$("#deps").addEventListener("click", () => { ui.deps = !ui.deps; saveUi(); renderTree(); });
+$("#lanes").addEventListener("click", () => { ui.lanes = !ui.lanes; saveUi(); renderTree(); });
+$("#zin").addEventListener("click", () => setZoom(ui.zoom + 0.1));
+$("#zout").addEventListener("click", () => setZoom(ui.zoom - 0.1));
+$("#zreset").addEventListener("click", () => setZoom(1));
+$("#undo").addEventListener("click", undo);
+$("#redo").addEventListener("click", redo);
+$("#takeDisk").addEventListener("click", load);
+$("#keepMine").addEventListener("click", async () => {
+  mtime = (await (await fetch("/api/mtime")).json()).mtime;
+  conflict = false;
+  $("#banner").classList.remove("show");
+  save();
+});
+$("#stage").addEventListener("wheel", e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  setZoom(ui.zoom + (e.deltaY < 0 ? 0.1 : -0.1));
+}, { passive: false });
+$("#stage").addEventListener("click", e => { if (e.target.id === "stage" || e.target.id === "sizer" || e.target.id === "canvas") select(null); });
+
+document.addEventListener("keydown", e => {
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName);
+  if (e.key === "Escape") {
+    if (typing) { document.activeElement.blur(); return; }
+    if (query) { query = ""; $("#search").value = ""; renderTree(); return; }
+    select(null); return;
+  }
+  if (typing) {
+    if (e.key === "Enter" && document.activeElement.id === "f-title") document.activeElement.blur();
+    return;
+  }
+  const mod = e.ctrlKey || e.metaKey;
+  if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
+  if (e.key === "/") { e.preventDefault(); $("#search").focus(); return; }
+  if (!selId || mod) return;
+  const ent = index.get(selId), sib = ent.parent?.children || [], i = sib.indexOf(ent.node);
+  const keys = {
+    Tab: () => addChild(selId),
+    Enter: () => addSibling(selId),
+    Delete: () => remove(selId),
+    Backspace: () => remove(selId),
+    " ": () => toggle(selId),
+    F2: () => select(selId, true),
+    ArrowLeft: () => ent.parent && select(ent.parent.id),
+    ArrowRight: () => ent.node.children.length && select(ent.node.children[0].id),
+    ArrowUp: () => i > 0 && select(sib[i - 1].id),
+    ArrowDown: () => i >= 0 && i < sib.length - 1 && select(sib[i + 1].id),
+  };
+  if (keys[e.key]) { e.preventDefault(); keys[e.key](); }
+});
+
+window.addEventListener("beforeunload", e => { if (rev !== savedRev) e.preventDefault(); });
+
+load().catch(e => setSave("load failed: " + e.message, "bad"));
+</script>
+</body>
+</html>

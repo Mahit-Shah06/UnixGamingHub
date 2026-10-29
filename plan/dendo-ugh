@@ -1,19 +1,37 @@
 #!/usr/bin/env python3
-"""dendo-ugh — local editor for plan/dendro.json.
+"""dendo-ugh — local planner for plan/dendro.json.
 
-  dendo-ugh          start the server if needed, open the page
-  dendo-ugh serve    run the server in the foreground
-  dendo-ugh stop     stop the background server
-  dendo-ugh status   print whether it is running
+Page
+  dendo-ugh                      start the server if needed and open the page
+  dendo-ugh serve | stop | status
+
+Read
+  dendo-ugh brief                focus, next up, decisions, recent activity
+  dendo-ugh next                 every task you can start now, in priority order
+  dendo-ugh ls [ID] [-d N]       print the trees (or one subtree)
+  dendo-ugh show ID              one node in full
+
+Write  (agents: pass --by claude, or set DENDO_BY=claude)
+  dendo-ugh set ID doing now title="..." lane=core critical=yes notes="..." rank=2
+  dendo-ugh add PARENT "Title"   PARENT '-' starts a new tree
+  dendo-ugh mv ID TARGET         TARGET '-' detaches into its own tree; --before/--after for siblings
+  dendo-ugh rm ID
+  dendo-ugh dep ID X Y [--drop Z]
+  dendo-ugh check ID "item" | N  add a checklist item, or toggle item N
+  dendo-ugh log "text"
+  dendo-ugh decide "text" [--why "..."] [--node ID]
 """
+import argparse
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
 import time
 import urllib.request
 import webbrowser
+from datetime import date, datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -30,6 +48,40 @@ LOG = RUN / "log"
 # preflight we never answer, so other sites can't write the plan.
 ALLOWED_HOSTS = {f"{HOST}:{PORT}", f"localhost:{PORT}"}
 
+STATUSES = ["idea", "todo", "doing", "blocked", "done"]
+PRIOS = ["now", "next", "later", "someday"]
+MARK = {"idea": "?", "todo": " ", "doing": "~", "blocked": "!", "done": "x"}
+ACTIVITY_CAP = 300
+ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+
+
+# ---------- file ----------
+
+def walk(plan):
+    def rec(n, parent, root, depth):
+        yield n, parent, root, depth
+        for c in n.get("children", []):
+            yield from rec(c, n, root, depth + 1)
+    for t in plan["trees"]:
+        yield from rec(t, None, t, 0)
+
+
+def migrate(plan):
+    if "root" in plan:
+        root = plan.pop("root")
+        root["pos"] = {"x": 0, "y": 0}
+        plan["trees"] = [root]
+    plan["version"] = 2
+    for key in ("lanes", "trees", "decisions", "activity"):
+        plan.setdefault(key, [])
+    defaults = {"status": "todo", "lane": None, "critical": False, "priority": None, "rank": None, "notes": ""}
+    for n, *_ in walk(plan):
+        for k, v in defaults.items():
+            n.setdefault(k, v)
+        for k in ("deps", "checklist", "children"):
+            n.setdefault(k, [])
+    return plan
+
 
 def mtime():
     try:
@@ -40,11 +92,9 @@ def mtime():
 
 def read_plan():
     try:
-        return json.loads(PLAN.read_text())
+        return migrate(json.loads(PLAN.read_text()))
     except FileNotFoundError:
-        return {"version": 1, "lanes": [], "root": {
-            "id": "UGH", "title": "UnixGamingHub", "status": "todo", "lane": None,
-            "critical": False, "deps": [], "notes": "", "children": []}}
+        return migrate({"trees": []})
 
 
 def write_plan(plan):
@@ -52,6 +102,396 @@ def write_plan(plan):
     tmp.write_text(json.dumps(plan, indent=2, ensure_ascii=False) + "\n")
     os.replace(tmp, PLAN)
 
+
+def now_iso():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def die(msg):
+    sys.exit(f"dendo-ugh: {msg}")
+
+
+# ---------- model ----------
+
+class Plan:
+    def __init__(self, by="user"):
+        self.data = read_plan()
+        self.by = by
+        self.reindex()
+
+    def reindex(self):
+        self.index, self.order = {}, {}
+        for i, (n, parent, root, depth) in enumerate(walk(self.data)):
+            self.index[n["id"]] = (n, parent, root, depth)
+            self.order[n["id"]] = i
+
+    def get(self, id):
+        hit = self.index.get(id) or next((v for k, v in self.index.items() if k.lower() == id.lower()), None)
+        if not hit:
+            die(f"no node {id!r}")
+        return hit
+
+    def node(self, id):
+        return self.get(id)[0]
+
+    def nodes(self):
+        return [v[0] for v in self.index.values()]
+
+    def log(self, text):
+        act = self.data["activity"]
+        act.append({"at": now_iso(), "by": self.by, "text": text})
+        del act[:-ACTIVITY_CAP]
+
+    def save(self):
+        self.data["updated"] = now_iso()
+        write_plan(self.data)
+
+    def is_done(self, n):
+        return n["status"] == "done" or (bool(n["children"]) and all(self.is_done(c) for c in n["children"]))
+
+    def readiness(self, n):
+        if self.is_done(n):
+            return "done", []
+        if n["status"] == "blocked":
+            return "blocked", []
+        # A parent's dependencies hold for everything under it.
+        deps = list(n["deps"])
+        for anc in self.path(n["id"]):
+            deps += [d for d in anc["deps"] if d not in deps]
+        waits = [d for d in deps if d in self.index and not self.is_done(self.index[d][0])]
+        return ("waiting", waits) if waits else ("ready", [])
+
+    def tasks(self):
+        return [n for n in self.nodes() if not n["children"] or n["priority"]]
+
+    def sort_key(self, n):
+        p = PRIOS.index(n["priority"]) if n["priority"] in PRIOS else len(PRIOS)
+        return p, n["rank"] if n["rank"] is not None else 1e9, self.order[n["id"]]
+
+    def renumber(self, prio):
+        bucket = sorted((n for n in self.tasks() if n["priority"] == prio), key=self.sort_key)
+        for i, n in enumerate(bucket, 1):
+            n["rank"] = i
+
+    def next_rank(self, prio):
+        return max((n["rank"] or 0 for n in self.tasks() if n["priority"] == prio), default=0) + 1
+
+    # Must match newId() in dendro.html.
+    def new_id(self, parent):
+        if parent is None:
+            i = 1
+            while f"T{i}" in self.index:
+                i += 1
+            return f"T{i}"
+        pid = parent["id"]
+        is_root = self.index[pid][1] is None
+        if is_root and not any(ch.isdigit() for ch in pid) and all(len(c["id"]) == 1 for c in parent["children"]):
+            for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+                if c not in self.index:
+                    return c
+        sep = "" if len(pid) == 1 and pid.isalpha() else "."
+        i = 1
+        while f"{pid}{sep}{i}" in self.index:
+            i += 1
+        return f"{pid}{sep}{i}"
+
+    def detach(self, n, parent):
+        if parent is None:
+            self.data["trees"].remove(n)
+        else:
+            parent["children"].remove(n)
+
+    def path(self, id):
+        out, parent = [], self.index[id][1]
+        while parent:
+            out.insert(0, parent)
+            parent = self.index[parent["id"]][1]
+        return out
+
+
+def blank(id, title):
+    return {"id": id, "title": title, "status": "todo", "lane": None, "critical": False, "priority": None,
+            "rank": None, "deps": [], "notes": "", "checklist": [], "children": []}
+
+
+def contains(a, b):
+    return a is b or any(contains(c, b) for c in a["children"])
+
+
+# ---------- output ----------
+
+def flags(n):
+    out = []
+    if n["critical"]:
+        out.append("★")
+    if n["priority"]:
+        out.append(n["priority"] + (f"#{n['rank']}" if n["rank"] else ""))
+    if n["checklist"]:
+        out.append(f"{sum(c['done'] for c in n['checklist'])}/{len(n['checklist'])}")
+    return ("  " + " ".join(out)) if out else ""
+
+
+def row(n, width=6):
+    return f"[{MARK.get(n['status'], ' ')}] {n['id']:<{width}} {n['title']}{flags(n)}"
+
+
+def ago(iso):
+    try:
+        s = (datetime.now(timezone.utc) - datetime.fromisoformat(iso.replace("Z", "+00:00"))).total_seconds()
+    except ValueError:
+        return ""
+    if s < 60:
+        return "now"
+    if s < 3600:
+        return f"{int(s // 60)}m ago"
+    if s < 86400:
+        return f"{int(s // 3600)}h ago"
+    return f"{int(s // 86400)}d ago"
+
+
+def cmd_brief(p, a):
+    ts = p.tasks()
+    ready = sorted((n for n in ts if p.readiness(n)[0] == "ready" and n["status"] != "doing"), key=p.sort_key)
+    doing = [n for n in p.nodes() if n["status"] == "doing"]
+    blocked = [n for n in p.nodes() if n["status"] == "blocked"]
+    done = sum(p.is_done(n) for n in ts)
+    w = max([len(n["id"]) for n in p.nodes()] + [4])
+    print(f"UGH plan · {len(p.data['trees'])} tree(s) · {len(ts)} tasks · {done} done · {len(ready)} ready to start\n")
+    for title, items in (("FOCUS (doing)", doing), ("NEXT UP", ready[:6]), ("BLOCKED", blocked)):
+        print(title)
+        print("\n".join("  " + row(n, w) for n in items) if items else "  —")
+        print()
+    print("DECISIONS (latest 6)")
+    decs = p.data["decisions"][-6:][::-1]
+    for d in decs:
+        print(f"  {d.get('date', '')[5:]}  {d['text']}" + (f"  [{d['node']}]" if d.get("node") else ""))
+    if not decs:
+        print("  —")
+    print("\nRECENT")
+    acts = p.data["activity"][-8:][::-1]
+    for x in acts:
+        print(f"  {x['by']:<7} {x['text']}  · {ago(x['at'])}")
+    if not acts:
+        print("  —")
+    print("\nMore: `dendo-ugh next`, `dendo-ugh show ID`, `dendo-ugh ls`. Plan file: plan/dendro.json")
+
+
+def cmd_next(p, a):
+    ts = sorted((n for n in p.tasks() if p.readiness(n)[0] == "ready"), key=p.sort_key)
+    w = max([len(n["id"]) for n in ts] + [4])
+    print("\n".join(row(n, w) for n in ts) if ts else "Nothing is ready. Check `dendo-ugh brief` for what's blocking.")
+
+
+def cmd_ls(p, a):
+    roots = [p.node(a.id)] if a.id else p.data["trees"]
+
+    def lines(n, prefix, last, top, depth):
+        more = f"  (+{len(n['children'])} hidden)" if a.depth is not None and depth >= a.depth and n["children"] else ""
+        yield ("" if top else prefix + ("└─ " if last else "├─ ")) + row(n) + more
+        if more:
+            return
+        nxt = "" if top else prefix + ("   " if last else "│  ")
+        for i, c in enumerate(n["children"]):
+            yield from lines(c, nxt, i == len(n["children"]) - 1, False, depth + 1)
+
+    for i, r in enumerate(roots):
+        if i:
+            print()
+        print("\n".join(lines(r, "", True, True, 0)))
+
+
+def cmd_show(p, a):
+    n, parent, root, depth = p.get(a.id)
+    kind, waits = p.readiness(n)
+    path = " › ".join(f"{x['id']} {x['title']}" for x in p.path(n["id"])) or "(tree root)"
+    print(f"{n['id']}  {n['title']}")
+    print(f"path       {path}")
+    print(f"status     {n['status']}    priority {n['priority'] or '—'}{' #' + str(n['rank']) if n['rank'] else ''}"
+          f"    lane {n['lane'] or 'inherit'}    critical {'yes' if n['critical'] else 'no'}")
+    print(f"readiness  {kind}" + (f" (waiting on {', '.join(waits)})" if waits else ""))
+    for d in n["deps"]:
+        print(f"depends    {row(p.node(d))}" if d in p.index else f"depends    {d} (missing)")
+    for m in p.nodes():
+        if n["id"] in m["deps"]:
+            print(f"needed by  {row(m)}")
+    for c in n["children"]:
+        print(f"child      {row(c)}")
+    for i, c in enumerate(n["checklist"], 1):
+        print(f"check {i:<4} [{'x' if c['done'] else ' '}] {c['text']}")
+    for d in p.data["decisions"]:
+        if d.get("node") == n["id"]:
+            print(f"decision   {d.get('date', '')}  {d['text']}" + (f" — {d['why']}" if d.get("why") else ""))
+    if n["notes"]:
+        print("notes")
+        print("\n".join("  " + line for line in n["notes"].splitlines()))
+
+
+# ---------- writes ----------
+
+def cmd_set(p, a):
+    n = p.node(a.id)
+    changes = []
+    for tok in a.changes:
+        if "=" in tok:
+            k, v = tok.split("=", 1)
+        elif tok in STATUSES:
+            k, v = "status", tok
+        elif tok in PRIOS or tok == "none":
+            k, v = "priority", tok
+        else:
+            die(f"don't know what {tok!r} means (try a status, a priority, or key=value)")
+        k = {"prio": "priority"}.get(k, k)
+        if k == "status":
+            if v not in STATUSES:
+                die(f"status must be one of {', '.join(STATUSES)}")
+            n["status"] = v
+        elif k == "priority":
+            v = None if v in ("", "none") else v
+            if v is not None and v not in PRIOS:
+                die(f"priority must be one of {', '.join(PRIOS)} or none")
+            if v != n["priority"]:
+                old = n["priority"]
+                n["priority"], n["rank"] = v, (p.next_rank(v) if v else None)
+                if old:
+                    p.renumber(old)
+        elif k == "rank":
+            if not n["priority"]:
+                die("give it a priority before a rank")
+            bucket = sorted((m for m in p.tasks() if m["priority"] == n["priority"] and m is not n), key=p.sort_key)
+            bucket.insert(max(0, int(v) - 1), n)
+            for i, m in enumerate(bucket, 1):
+                m["rank"] = i
+        elif k == "title":
+            n["title"] = v
+        elif k == "lane":
+            v = None if v in ("", "none", "inherit") else v
+            if v is not None and v not in {l["id"] for l in p.data["lanes"]}:
+                die(f"no lane {v!r}; lanes: {', '.join(l['id'] for l in p.data['lanes'])}")
+            n["lane"] = v
+        elif k == "critical":
+            n["critical"] = v.lower() in ("1", "yes", "true", "on")
+        elif k == "notes":
+            n["notes"] = v
+        else:
+            die(f"can't set {k!r}")
+        changes.append(f"{k} → {v if v is not None else 'none'}" if k != "notes" else "notes")
+    p.log(f"{n['id']}: {', '.join(changes)}")
+    p.save()
+    print(row(n))
+
+
+def cmd_add(p, a):
+    if a.id and (not ID_RE.match(a.id) or a.id in p.index):
+        die(f"id {a.id!r} is invalid or taken")
+    if a.parent == "-":
+        n = blank(a.id or p.new_id(None), a.title)
+        p.data["trees"].append(n)
+        p.log(f"new tree {n['id']}")
+    else:
+        parent = p.node(a.parent)
+        n = blank(a.id or p.new_id(parent), a.title)
+        parent["children"].append(n)
+        p.log(f"added {n['id']} under {parent['id']}")
+    if a.status:
+        n["status"] = a.status
+    if a.priority:
+        n["priority"], n["rank"] = a.priority, p.next_rank(a.priority)
+    p.save()
+    print(n["id"])
+
+
+def cmd_mv(p, a):
+    n, parent, *_ = p.get(a.id)
+    if a.target == "-":
+        if parent is None:
+            die(f"{n['id']} is already its own tree")
+        p.detach(n, parent)
+        n.pop("pos", None)
+        p.data["trees"].append(n)
+        p.log(f"detached {n['id']} into its own tree")
+    else:
+        t, tparent, *_ = p.get(a.target)
+        if contains(n, t):
+            die("can't move a node under itself")
+        if (a.before or a.after) and tparent is None:
+            die(f"{t['id']} is a tree root; it has no siblings")
+        p.detach(n, parent)
+        n.pop("pos", None)
+        if a.before or a.after:
+            sib = tparent["children"]
+            sib.insert(sib.index(t) + (1 if a.after else 0), n)
+            p.log(f"moved {n['id']} {'after' if a.after else 'before'} {t['id']}")
+        else:
+            t["children"].append(n)
+            p.log(f"{'attached tree' if parent is None else 'moved'} {n['id']} under {t['id']}")
+    p.save()
+    print("ok")
+
+
+def cmd_rm(p, a):
+    n, parent, *_ = p.get(a.id)
+    gone = {m["id"] for m, *_ in walk({"trees": [n]})}
+    p.detach(n, parent)
+    for m in p.nodes():
+        m["deps"] = [d for d in m["deps"] if d not in gone]
+    for d in p.data["decisions"]:
+        if d.get("node") in gone:
+            d["node"] = None
+    p.log(f"deleted {n['id']}" + (f" (+{len(gone) - 1} inside)" if len(gone) > 1 else ""))
+    p.save()
+    print(f"deleted {len(gone)} node(s)")
+
+
+def cmd_dep(p, a):
+    n = p.node(a.id)
+    for d in a.add:
+        d = p.node(d)["id"]
+        if d != n["id"] and d not in n["deps"]:
+            n["deps"].append(d)
+    for d in a.drop or []:
+        n["deps"] = [x for x in n["deps"] if x.lower() != d.lower()]
+    p.log(f"{n['id']} depends on {', '.join(n['deps']) or 'nothing'}")
+    p.save()
+    print(f"{n['id']} depends on: {', '.join(n['deps']) or 'nothing'}")
+
+
+def cmd_check(p, a):
+    n = p.node(a.id)
+    if a.item.isdigit():
+        i = int(a.item) - 1
+        if not 0 <= i < len(n["checklist"]):
+            die(f"{n['id']} has {len(n['checklist'])} checklist item(s)")
+        c = n["checklist"][i]
+        c["done"] = not c["done"]
+        p.log(f"{n['id']}: {'checked' if c['done'] else 'unchecked'} “{c['text']}”")
+    else:
+        n["checklist"].append({"text": a.item, "done": False})
+        p.log(f"{n['id']}: checklist + “{a.item}”")
+    p.save()
+    for i, c in enumerate(n["checklist"], 1):
+        print(f"{i}. [{'x' if c['done'] else ' '}] {c['text']}")
+
+
+def cmd_log(p, a):
+    p.log(a.text)
+    p.save()
+    print("logged")
+
+
+def cmd_decide(p, a):
+    node = p.node(a.node)["id"] if a.node else None
+    ids = {d.get("id") for d in p.data["decisions"]}
+    i = 1
+    while f"D{i}" in ids:
+        i += 1
+    p.data["decisions"].append({"id": f"D{i}", "date": date.today().isoformat(), "text": a.text,
+                                "why": a.why or "", "node": node})
+    p.log(f"decided: {a.text[:80]}")
+    p.save()
+    print(f"D{i}")
+
+
+# ---------- server ----------
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args):
@@ -101,9 +541,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             body = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))))
             plan = body["plan"]
-            if not isinstance(plan.get("root"), dict):
-                raise ValueError("plan has no root")
-        except (ValueError, KeyError, TypeError) as e:
+            if not isinstance(plan.get("trees"), list):
+                raise ValueError("plan has no trees")
+        except (ValueError, KeyError, TypeError, AttributeError) as e:
             self.send_json(400, {"error": str(e)})
             return
         if body.get("base") != mtime():
@@ -144,7 +584,7 @@ def start():
                 break
             time.sleep(0.1)
         else:
-            sys.exit(f"dendo-ugh: server didn't start, see {LOG}")
+            die(f"server didn't start, see {LOG}")
     print(URL)
     webbrowser.open(URL)
 
@@ -157,18 +597,59 @@ def stop():
         print("not running")
 
 
+# ---------- cli ----------
+
 def main():
-    cmd = sys.argv[1] if len(sys.argv) > 1 else "open"
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--by", default=os.environ.get("DENDO_BY", "user"), help="who is making the change")
+    ap = argparse.ArgumentParser(prog="dendo-ugh", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd")
+    for name in ("open", "serve", "stop", "status", "brief", "next"):
+        sub.add_parser(name, parents=[common])
+    s = sub.add_parser("ls", parents=[common])
+    s.add_argument("id", nargs="?")
+    s.add_argument("-d", "--depth", type=int)
+    sub.add_parser("show", parents=[common]).add_argument("id")
+    s = sub.add_parser("set", parents=[common])
+    s.add_argument("id")
+    s.add_argument("changes", nargs="+")
+    s = sub.add_parser("add", parents=[common])
+    s.add_argument("parent")
+    s.add_argument("title")
+    s.add_argument("--id")
+    s.add_argument("--status", choices=STATUSES)
+    s.add_argument("--priority", choices=PRIOS)
+    s = sub.add_parser("mv", parents=[common])
+    s.add_argument("id")
+    s.add_argument("target")
+    g = s.add_mutually_exclusive_group()
+    g.add_argument("--before", action="store_true")
+    g.add_argument("--after", action="store_true")
+    sub.add_parser("rm", parents=[common]).add_argument("id")
+    s = sub.add_parser("dep", parents=[common])
+    s.add_argument("id")
+    s.add_argument("add", nargs="*")
+    s.add_argument("--drop", nargs="+")
+    s = sub.add_parser("check", parents=[common])
+    s.add_argument("id")
+    s.add_argument("item")
+    sub.add_parser("log", parents=[common]).add_argument("text")
+    s = sub.add_parser("decide", parents=[common])
+    s.add_argument("text")
+    s.add_argument("--why")
+    s.add_argument("--node")
+
+    a = ap.parse_args()
+    cmd = a.cmd or "open"
     if cmd == "open":
-        start()
-    elif cmd == "serve":
-        serve()
-    elif cmd == "stop":
-        stop()
-    elif cmd == "status":
-        print(f"running at {URL}" if running() else "not running")
-    else:
-        sys.exit(__doc__)
+        return start()
+    if cmd == "serve":
+        return serve()
+    if cmd == "stop":
+        return stop()
+    if cmd == "status":
+        return print(f"running at {URL}" if running() else "not running")
+    globals()["cmd_" + cmd](Plan(a.by), a)
 
 
 if __name__ == "__main__":

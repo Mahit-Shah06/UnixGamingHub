@@ -67,6 +67,8 @@ const LABELS: &[(&str, &str)] = &[
     ("Composite", "temp"),
 ];
 
+const ORDER: &[&str] = &["CPU", "dGPU", "iGPU", "GPU", "SSD", "Disk", "RAM", "Fans", "Board"];
+
 // With 2+ GPUs, the one with the least video memory is the built-in one (iGPU), the rest are dGPUs.
 // With only one GPU it stays "GPU". A GPU without a VRAM file (e.g. Intel built-in) counts as 0.
 pub fn name_gpus(sensors: &mut [Sensor]) {
@@ -136,3 +138,14 @@ pub fn friendly_label(label: &str) -> String {
     }
     label.to_string()
 }
+
+// A device's rank is its position in ORDER; unknown devices go last.
+pub fn device_rank(device: &str) -> usize {
+    for (i, name) in ORDER.iter().enumerate() {
+        if device.starts_with(name) {
+            return i;
+        }
+    }
+    99
+}
+

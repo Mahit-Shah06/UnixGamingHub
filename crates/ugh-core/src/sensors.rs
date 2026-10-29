@@ -1,12 +1,12 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use crate::names::{friendly_name, friendly_label, name_gpus, number_drives};
+use crate::names::{friendly_name, friendly_label, name_gpus, number_drives, device_rank};
 
 const TYPES: [(&str, f64, &str); 5] = [
     ("temp", 1000.0, "°C"),
-    ("fan", 1.0, "RPM"),
     ("power", 1_000_000.0, "W"),
     ("freq", 1_000_000.0, "MHz"),
+    ("fan", 1.0, "RPM"),
     ("in", 1000.0, "V"),
 ];
 const DEVICE_DIR: &str = "/sys/class/hwmon";
@@ -51,7 +51,18 @@ pub fn sensor_names() -> Option<Vec<Sensor>> {
 
     name_gpus(&mut sensors);
     number_drives(&mut sensors);
+    sensors.sort_by_key(|s| (device_rank(&s.device), s.device.clone(), type_rank(s.unit), s.path.clone()));
     Some(sensors)
+}
+
+// A type's rank is its row in TYPES, so the row order there is the order sensors show up in.
+fn type_rank(unit: &str) -> usize {
+    for (i, tup) in TYPES.iter().enumerate() {
+        if tup.2 == unit {
+            return i;
+        }
+    }
+    99
 }
 
 fn read_sensors(path: &Path) -> Option<f64>{

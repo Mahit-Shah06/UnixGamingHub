@@ -72,6 +72,12 @@ body[data-view=list] #stage, body[data-view=tree] #list { display: none; }
 .node:hover { border-color: var(--line2); border-top-color: var(--lane, var(--line2)); background: var(--raise2); }
 .node.root { background: #212737; }
 .node.root .t { font-weight: 650; }
+.node.colored, .lrow.colored { background: color-mix(in srgb, var(--c) 20%, var(--raise)); border-color: color-mix(in srgb, var(--c) 70%, transparent); }
+.node.colored:hover, .lrow.colored:hover { background: color-mix(in srgb, var(--c) 28%, var(--raise)); border-color: var(--c); }
+.swatches { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.swatches button { width: 24px; height: 24px; padding: 0; border-radius: 6px; }
+.swatches button.on { box-shadow: 0 0 0 2px var(--text); }
+.swatches input[type=color] { width: 30px; height: 26px; }
 .node.sel { box-shadow: 0 0 0 2px #ffffff55; }
 .node.primary { box-shadow: 0 0 0 2px #fff; }
 .node.hit { box-shadow: 0 0 0 2px var(--accent); }
@@ -131,6 +137,8 @@ body[data-view=list] #stage, body[data-view=tree] #list { display: none; }
 
 /* ---------- panel ---------- */
 aside { grid-row: 3; grid-column: 2; border-left: 1px solid var(--line); background: var(--panel); overflow: auto; padding: 14px 14px 60px; }
+body.nopanel { grid-template-columns: 1fr 0; }
+body.nopanel aside { display: none; }
 aside.fade > * { animation: fadeIn .2s var(--ease) both; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } }
 aside h2 { font-size: 12px; margin: 0 0 10px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
@@ -244,6 +252,7 @@ summary .k { font-weight: 400; text-transform: none; letter-spacing: 0; }
     <button id="lanes2" title="Colour by lane">Lanes</button>
   </div>
   <div class="sep"></div>
+  <button id="paneltoggle" title="Show or hide the right panel (P)">Panel</button>
   <button id="undo" title="Undo (Ctrl+Z)">↶</button>
   <button id="redo" title="Redo (Ctrl+Shift+Z)">↷</button>
   <button id="cmdbtn" title="Command bar">Ctrl K</button>
@@ -361,7 +370,7 @@ function matches(n) {
   const hay = (n.id + " " + n.title + " " + (n.notes || "")).toLowerCase();
   return query.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
 }
-const blank = (id, title = "New node") => ({ id, title, status: "todo", lane: null, critical: false, priority: null, rank: null,
+const blank = (id, title = "New node") => ({ id, title, status: "todo", color: null, lane: null, critical: false, priority: null, rank: null,
   deps: [], notes: "", checklist: [], children: [] });
 
 // Must match Plan.new_id() in dendo-ugh.
@@ -465,6 +474,7 @@ async function load() {
   }
   for (const id of [...sel]) if (!index.has(id)) sel.delete(id);
   if (selId && !index.has(selId)) selId = [...sel].at(-1) ?? null;
+  for (const id of [...ui.collapsed]) if (!index.has(id)) ui.collapsed.delete(id);
   render();
   if (!ui.fitted) { fit(false, 0.8); ui.fitted = true; saveUi(); } else applyView();
   setSave("saved");
@@ -604,6 +614,7 @@ function setPrio(ids, p) {
   });
 }
 function setLane(ids, lane) { mutate(() => { ids.forEach(id => { nodeOf(id).lane = lane; }); }); }
+function setColor(ids, color, key = null) { mutate(() => { ids.forEach(id => { nodeOf(id).color = color; }); }, { key, panel: !key }); }
 function toggleCrit(ids) {
   const on = ids.some(id => !nodeOf(id).critical);
   mutate(() => { ids.forEach(id => { nodeOf(id).critical = on; }); });
@@ -659,6 +670,8 @@ function render(panel = true) {
   toolbar();
 }
 function toolbar() {
+  document.body.classList.toggle("nopanel", ui.panel === false);
+  $("#paneltoggle").classList.toggle("on", ui.panel !== false);
   $("#v-tree").classList.toggle("on", ui.view === "tree");
   $("#v-list").classList.toggle("on", ui.view === "list");
   $("#deps").classList.toggle("on", ui.deps);
@@ -773,6 +786,8 @@ function paintNode(el, e) {
   el.classList.toggle("dim", !!query && !matches(n));
   const lc = ui.lanes && laneColor(n.id);
   if (lc) el.style.setProperty("--lane", lc); else el.style.removeProperty("--lane");
+  el.classList.toggle("colored", !!n.color);
+  if (n.color) el.style.setProperty("--c", n.color); else el.style.removeProperty("--c");
   el.title = n.notes ? `${n.title}\n\n${n.notes.slice(0, 300)}` : n.title;
 }
 function svgPath(cls) { const p = document.createElementNS(SVG, "path"); p.setAttribute("class", cls); return p; }
@@ -1084,6 +1099,7 @@ function nodeMenuHtml(id) {
     <div class="mrow">${STATUSES.map(s => `<button data-act="status" data-v="${s}" title="${s}"><span class="dot s-${s}"></span></button>`).join("")}</div>
     <div class="mrow">${PRIOS.map(p => `<button data-act="prio" data-v="${p}" class="p-${p}">${PRIO_LABEL[p]}</button>`).join("")}<button data-act="prio" data-v="" title="No priority">—</button></div>
     <div class="mrow">${(plan.lanes || []).map(l => `<button data-act="lane" data-v="${esc(l.id)}" title="${esc(l.name)}"><span class="sw" style="background:${esc(l.color)}"></span></button>`).join("")}<button data-act="lane" data-v="" title="Inherit lane">—</button></div>
+    <div class="mrow">${COLORS.map(c => `<button data-act="color" data-v="${c}" title="Colour"><span class="sw" style="background:${c}"></span></button>`).join("")}<button data-act="color" data-v="" title="No colour">—</button></div>
     <div class="msep"></div>
     ${multi ? "" : mi("rename", "Rename", "F2") + mi("child", "Add child", "Tab") + mi("sibling", "Add sibling", "Enter")}
     ${mi("crit", "Toggle critical ★")}
@@ -1104,6 +1120,7 @@ function menuAct(act, v, id, x, y) {
     case "status": setStatus(ids, v); break;
     case "prio": setPrio(ids, v); break;
     case "lane": setLane(ids, v || null); break;
+    case "color": setColor(ids, v || null); break;
     case "crit": toggleCrit(ids); break;
     case "rename": select(id, { reveal: false, rename: true }); break;
     case "child": addChild(id); break;
@@ -1242,7 +1259,8 @@ $("#cmd").addEventListener("pointerdown", e => { if (e.target.id === "cmd") clos
 function rowHtml(n, p) {
   const rd = readiness(n), lc = ui.lanes && laneColor(n.id);
   const ck = n.checklist.length ? `${n.checklist.filter(c => c.done).length}/${n.checklist.length}` : "";
-  return `<div class="lrow${sel.has(n.id) ? " sel" : ""}${isDone(n) ? " done" : ""}" data-id="${esc(n.id)}" data-p="${p || ""}"${lc ? ` style="--lane:${esc(lc)}"` : ""}>` +
+  const st = (lc ? `--lane:${esc(lc)};` : "") + (n.color ? `--c:${esc(n.color)};` : "");
+  return `<div class="lrow${sel.has(n.id) ? " sel" : ""}${isDone(n) ? " done" : ""}${n.color ? " colored" : ""}" data-id="${esc(n.id)}" data-p="${p || ""}"${st ? ` style="${st}"` : ""}>` +
     `<span class="grip">⠿</span><span class="rk">${n.rank ?? "·"}</span><span class="dot s-${esc(n.status)}"></span><span class="id">${esc(n.id)}</span>` +
     `<span class="t">${esc(n.title)}${n.critical ? ' <span class="crit">★</span>' : ""}</span>` +
     `<span class="path">${esc(pathOf(n.id).slice(1).map(x => x.title).join(" › "))}</span>` +
@@ -1408,6 +1426,11 @@ const statusRow = n => STATUSES.map((s, i) =>
 const prioRow = n => PRIOS.map((p, i) =>
   `<button data-act="prio" data-v="${p}" class="${n && n.priority === p ? "on" : ""}" title="Shift+${i + 1}">${PRIO_LABEL[p]}${n && n.priority === p && n.rank ? ` #${n.rank}` : ""}</button>`).join("") +
   `<button data-act="prio" data-v="" class="${n && !n.priority ? "on" : ""}" title="No priority (Shift+0)">—</button>`;
+const COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#14b8a6", "#3b82f6", "#a855f7", "#ec4899"];
+const swatchRow = cur => `<div class="swatches">${COLORS.map(c =>
+  `<button data-act="color" data-v="${c}" class="${cur === c ? "on" : ""}" style="background:${c}" title="${c}"></button>`).join("")}` +
+  `<input type="color" data-f="color" value="${esc(cur || "#6aa9ff")}" title="Pick any colour">` +
+  `<button data-act="color" data-v="" class="${cur ? "" : "on"}" title="No colour">—</button></div>`;
 const laneOpts = cur => (plan.lanes || []).map(l => `<option value="${esc(l.id)}" ${cur === l.id ? "selected" : ""}>${esc(l.name)}</option>`).join("");
 function decisionHtml(d, i, showNode) {
   return `<div class="dec"><div class="dec-h"><span>${esc(d.date || "")}</span>${showNode && d.node ? chip(d.node) : ""}` +
@@ -1432,6 +1455,7 @@ function nodePanel(n) {
   <label>Status <span class="k">keys 1–5</span></label><div class="seg-row">${statusRow(n)}</div>
   <label>Priority <span class="k">Shift+1–4</span></label><div class="seg-row">${prioRow(n)}</div>
   <div class="ready-line ${rd.kind}">${esc(readyText(rd))}</div>
+  <label>Colour</label>${swatchRow(n.color)}
   <div class="row"><div class="grow"><label>Lane</label><select data-f="lane"><option value="">inherit${inh ? ` (${esc(inh.name)})` : ""}</option>${laneOpts(n.lane)}</select></div>
     <div><button data-act="crit" class="${n.critical ? "on" : ""}" style="height:30px">★ critical</button></div></div>
   <label>Depends on</label>
@@ -1463,6 +1487,7 @@ function multiPanel() {
   <div class="chips">${ids.map(id => chip(id)).join("")}</div>
   <label>Status</label><div class="seg-row">${statusRow(null)}</div>
   <label>Priority</label><div class="seg-row">${prioRow(null)}</div>
+  <label>Colour</label>${swatchRow(null)}
   <label>Lane</label><select data-f="bulk-lane"><option value="__">set lane…</option><option value="">inherit</option>${laneOpts(null)}</select>
   <div class="actions"><button data-act="crit">★ toggle critical</button><button data-act="clear-sel">Clear selection</button></div>
   <div class="actions"><button data-act="delete" class="bad">Delete ${ids.length}</button></div>
@@ -1513,6 +1538,7 @@ panel.addEventListener("click", e => {
     case "child": addChild(selId); break;
     case "sibling": addSibling(selId); break;
     case "detach": detach(selId); break;
+    case "color": setColor(ids, v || null); break;
     case "delete": deleteNodes(ids); break;
     case "go": select(v); break;
     case "clear-sel": select(null); break;
@@ -1542,6 +1568,7 @@ panel.addEventListener("input", e => {
   else if (f === "cl-text") quiet(`cl:${n.id}:${i}`, () => { n.checklist[i].text = v; });
   else if (f === "dec-text") quiet("dt" + i, () => { plan.decisions[i].text = v; });
   else if (f === "dec-why") quiet("dw" + i, () => { plan.decisions[i].why = v; });
+  else if (f === "color") setColor([...sel], v, "color:" + [...sel].join());
   else if (f === "lane-name") quiet("ln" + e.target.dataset.l, () => { laneById(e.target.dataset.l).name = v; });
   else if (f === "lane-color") quiet("lc" + e.target.dataset.l, () => { laneById(e.target.dataset.l).color = v; });
 });
@@ -1593,6 +1620,8 @@ $("#zreset").addEventListener("click", () => zoomCenter(1 / ui.zoom));
 $("#undo").addEventListener("click", undo);
 $("#redo").addEventListener("click", redo);
 $("#cmdbtn").addEventListener("click", () => openCmd());
+function togglePanel() { ui.panel = ui.panel === false; saveUi(); toolbar(); if (ui.view === "tree") applyView(); }
+$("#paneltoggle").addEventListener("click", togglePanel);
 $("#takeDisk").addEventListener("click", load);
 $("#keepMine").addEventListener("click", async () => {
   mtime = (await (await fetch("/api/mtime")).json()).mtime;
@@ -1622,6 +1651,7 @@ document.addEventListener("keydown", e => {
   if (mod || (e.altKey && !e.key.startsWith("Arrow"))) return;
   if (e.key === "/") { e.preventDefault(); $("#search").focus(); return; }
   if (e.key === "v" || e.key === "V") { setView(ui.view === "tree" ? "list" : "tree"); return; }
+  if (e.key === "p" || e.key === "P") { togglePanel(); return; }
   if ((e.key === "f" || e.key === "F") && ui.view === "tree") { fit(); return; }
   if (ui.view === "list" && !selId && (e.key === "ArrowDown" || e.key === "ArrowUp")) { e.preventDefault(); listStep(1); return; }
   if (!selId) return;

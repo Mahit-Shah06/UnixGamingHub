@@ -12,7 +12,7 @@ Read
   dendo-ugh show ID              one node in full
 
 Write  (agents: pass --by claude, or set DENDO_BY=claude)
-  dendo-ugh set ID doing now title="..." lane=core critical=yes notes="..." rank=2
+  dendo-ugh set ID doing now title="..." color=#ff8800 lane=core critical=yes notes="..." rank=2
   dendo-ugh add PARENT "Title"   PARENT '-' starts a new tree
   dendo-ugh mv ID TARGET         TARGET '-' detaches into its own tree; --before/--after for siblings
   dendo-ugh rm ID
@@ -74,7 +74,7 @@ def migrate(plan):
     plan["version"] = 2
     for key in ("lanes", "trees", "decisions", "activity"):
         plan.setdefault(key, [])
-    defaults = {"status": "todo", "lane": None, "critical": False, "priority": None, "rank": None, "notes": ""}
+    defaults = {"status": "todo", "color": None, "lane": None, "critical": False, "priority": None, "rank": None, "notes": ""}
     for n, *_ in walk(plan):
         for k, v in defaults.items():
             n.setdefault(k, v)
@@ -210,7 +210,7 @@ class Plan:
 
 
 def blank(id, title):
-    return {"id": id, "title": title, "status": "todo", "lane": None, "critical": False, "priority": None,
+    return {"id": id, "title": title, "status": "todo", "color": None, "lane": None, "critical": False, "priority": None,
             "rank": None, "deps": [], "notes": "", "checklist": [], "children": []}
 
 
@@ -368,6 +368,11 @@ def cmd_set(p, a):
             if v is not None and v not in {l["id"] for l in p.data["lanes"]}:
                 die(f"no lane {v!r}; lanes: {', '.join(l['id'] for l in p.data['lanes'])}")
             n["lane"] = v
+        elif k == "color":
+            v = None if v in ("", "none") else v
+            if v is not None and not re.fullmatch(r"#[0-9a-fA-F]{6}", v):
+                die("color must look like #ff8800, or none")
+            n["color"] = v
         elif k == "critical":
             n["critical"] = v.lower() in ("1", "yes", "true", "on")
         elif k == "notes":

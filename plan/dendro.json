@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-10-29T17:21:53.721Z",
+  "updated": "2026-10-29T18:30:24Z",
   "lanes": [],
   "trees": [
     {
@@ -45,7 +45,7 @@
                 {
                   "id": "T1.1.1.1",
                   "title": "CPU: temp, usage, power, speed",
-                  "status": "todo",
+                  "status": "doing",
                   "color": null,
                   "lane": null,
                   "critical": false,
@@ -2902,6 +2902,11 @@
       "at": "2026-10-29T17:21:17Z",
       "by": "claude",
       "text": "added T4.8 Folder layout"
+    },
+    {
+      "at": "2026-10-29T18:30:24Z",
+      "by": "claude",
+      "text": "T1.1.1.1: status → doing"
     }
   ]
 }

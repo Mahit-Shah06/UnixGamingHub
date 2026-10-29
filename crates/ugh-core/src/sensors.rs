@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use crate::names::{friendly_name, name_gpus, number_drives};
+use crate::names::{friendly_name, friendly_label, name_gpus, number_drives};
 
 const TYPES: [(&str, f64, &str); 5] = [
     ("temp", 1000.0, "°C"),
@@ -33,8 +33,8 @@ pub fn sensor_names() -> Option<Vec<Sensor>> {
             let file_name = path.file_name()?.to_string_lossy().to_string();
 
             let base = file_name.split('_').next()?;
-            let label = match fs::read_to_string(base) {
-                Ok(text) => text.trim().to_string(),
+            let label = match fs::read_to_string(folder.join(format!("{base}_label"))){
+                Ok(text) => friendly_label(text.trim()),
                 Err(_) => base.to_string(),
             };
 

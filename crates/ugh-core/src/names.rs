@@ -48,14 +48,24 @@ const DEVICES: &[(&str, &str)] = &[
     ("ucsi", "USB-C"),
 ];
 
-pub fn friendly_name(device: &str) -> String {
-    for tup in DEVICES {
-        if device.starts_with(tup.0) {
-            return  tup.1.to_string();
-        }
-    }
-    device.to_string()
-}
+// Sensor label from the driver → friendly label. Exact matches; labels not listed stay as they are.
+const LABELS: &[(&str, &str)] = &[
+    // CPU
+    ("Tctl", "temp"),            // AMD
+    ("Tdie", "die temp"),        // AMD, older chips
+    ("Package id 0", "temp"),    // Intel
+    // GPU (AMD)
+    ("edge", "temp"),
+    ("junction", "hotspot temp"),
+    ("mem", "memory temp"),
+    ("PPT", "power"),
+    ("sclk", "core clock"),
+    ("mclk", "memory clock"),
+    ("vddgfx", "core voltage"),
+    ("vddnb", "SoC voltage"),
+    // SSD
+    ("Composite", "temp"),
+];
 
 // With 2+ GPUs, the one with the least video memory is the built-in one (iGPU), the rest are dGPUs.
 // With only one GPU it stays "GPU". A GPU without a VRAM file (e.g. Intel built-in) counts as 0.
@@ -109,3 +119,20 @@ pub fn number_drives(sensors: &mut [Sensor]) {
     }
 }
 
+pub fn friendly_name(device: &str) -> String {
+    for tup in DEVICES {
+        if device.starts_with(tup.0) {
+            return  tup.1.to_string();
+        }
+    }
+    device.to_string()
+}
+
+pub fn friendly_label(label: &str) -> String {
+    for tup in LABELS {
+        if label == tup.0 {
+            return tup.1.to_string();
+        }
+    }
+    label.to_string()
+}

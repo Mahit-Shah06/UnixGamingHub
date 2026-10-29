@@ -105,6 +105,9 @@ body[data-view=list] #stage, body[data-view=tree] #list { display: none; }
 .pulse { animation: pulse .45s var(--ease); }
 @keyframes pulse { 40% { transform: scale(1.9); box-shadow: 0 0 0 4px #ffffff22; } }
 
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 8px); z-index: 80; pointer-events: none; background: var(--raise2);
+  border: 1px solid var(--line2); border-radius: 8px; padding: 6px 12px; opacity: 0; transition: opacity .2s, transform .2s var(--ease); }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
 #hint { position: fixed; left: 0; top: 0; z-index: 60; pointer-events: none; background: var(--panel); border: 1px solid var(--line2);
   border-radius: 6px; padding: 3px 8px; font-size: 12px; opacity: 0; transition: opacity .15s; white-space: nowrap; }
 #hint.show { opacity: 1; }
@@ -234,7 +237,7 @@ summary .k { font-weight: 400; text-transform: none; letter-spacing: 0; }
   <div class="grp tree-only">
     <div class="sep"></div>
     <button id="newtree" title="Start a new tree">+ Tree</button>
-    <button id="tidy" title="Line trees up side by side">Tidy</button>
+    <button id="tidy" title="Line trees up side by side and put moved boxes back">Tidy</button>
     <button id="fit" title="Fit everything on screen (F)">Fit</button>
     <button id="expand">Expand</button>
     <button id="collapse" title="Collapse to level 1">Collapse</button>
@@ -281,6 +284,7 @@ summary .k { font-weight: 400; text-transform: none; letter-spacing: 0; }
   <div class="cmd-foot">↑↓ choose · Enter run · try <code>set A2 doing</code> <code>A3 now</code> <code>add C Fan curves</code> <code>attach T1 to D</code> <code>decide …</code></div>
 </div></div>
 <div id="hint"></div>
+<div id="toast"></div>
 
 <script>
 "use strict";
@@ -321,7 +325,7 @@ function reindex() {
   index = new Map();
   let order = 0;
   for (const t of plan.trees) (function walk(n, parent, depth) {
-    n.children ||= []; n.deps ||= []; n.checklist ||= [];
+    n.children ||= []; n.deps ||= []; n.checklist ||= []; n.also_under ||= [];
     index.set(n.id, { node: n, parent, root: t, depth, order: order++ });
     n.children.forEach(c => walk(c, n, depth + 1));
   })(t, null, 0);
@@ -363,14 +367,16 @@ const readyText = r => ({ ready: "✓ Ready to start", done: "✓ Done", blocked
 const readyShort = r => ({ ready: "✓ ready", done: "✓ done", blocked: "⛔ blocked" })[r.kind]
   || `⏳ ${r.waits.slice(0, 3).join(", ")}${r.waits.length > 3 ? "…" : ""}`;
 const isTask = n => !n.children.length || !!n.priority;
-const tasks = () => [...index.values()].map(e => e.node).filter(isTask);
+// A tree whose root has owner "claude" holds Claude's suggestions, not the user's plan.
+const isMine = id => index.get(id)?.root.owner !== "claude";
+const tasks = () => [...index.values()].map(e => e.node).filter(n => isTask(n) && isMine(n.id));
 const byRank = (a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || index.get(a.id).order - index.get(b.id).order;
 const countDesc = n => n.children.reduce((s, c) => s + 1 + countDesc(c), 0);
 function matches(n) {
   const hay = (n.id + " " + n.title + " " + (n.notes || "")).toLowerCase();
   return query.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
 }
-const blank = (id, title = "New node") => ({ id, title, status: "todo", color: null, lane: null, critical: false, priority: null, rank: null,
+const blank = (id, title = "New node") => ({ id, title, status: "todo", color: null, lane: null, critical: false, priority: null, rank: null, also_under: [],
   deps: [], notes: "", checklist: [], children: [] });
 
 // Must match Plan.new_id() in dendo-ugh.
@@ -522,7 +528,7 @@ function addChild(id, title) {
 function addSibling(id, title) {
   const e = index.get(id);
   if (!e) return;
-  if (!e.parent) return addChild(id, title);
+  if (!e.parent) return newTree(title);
   const n = blank(newId(e.parent), title || "New node");
   mutate(() => { e.parent.children.splice(e.parent.children.indexOf(e.node) + 1, 0, n); logAct(`added ${n.id} under ${e.parent.id}`); });
   select(n.id, { rename: !title });
@@ -546,12 +552,73 @@ function deleteNodes(ids) {
   }
   mutate(() => {
     for (const id of ids) detachRaw(index.get(id));
-    index.forEach(({ node }) => { node.deps = node.deps.filter(d => !gone.has(d)); });
+    index.forEach(({ node }) => { node.deps = node.deps.filter(d => !gone.has(d)); node.also_under = node.also_under.filter(d => !gone.has(d)); });
     (plan.decisions || []).forEach(d => { if (gone.has(d.node)) d.node = null; });
     logAct(`deleted ${ids.join(", ")}${gone.size > ids.length ? ` (+${gone.size - ids.length} inside)` : ""}`);
   });
   select(next && index.has(next) ? next : null, { reveal: false });
 }
+// A shared box keeps one main parent (where it's drawn) plus extra parents in also_under.
+function canShare(id, pid) {
+  const e = index.get(id);
+  return !!e && index.has(pid) && pid !== id && e.parent?.id !== pid && !e.node.also_under.includes(pid) && !isAncestor(id, pid);
+}
+function addShare(id, pid) {
+  if (!canShare(id, pid)) return;
+  mutate(() => { nodeOf(id).also_under.push(pid); logAct(`${id} is now also under ${pid}`); });
+}
+function dropShare(id, pid) {
+  mutate(() => { const n = nodeOf(id); n.also_under = n.also_under.filter(d => d !== pid); logAct(`${id} is no longer under ${pid}`); });
+}
+// ---------- copy & paste ----------
+
+let clip = null, toastTimer = 0;
+try { clip = JSON.parse(localStorage.getItem("dendo-ugh-clip") || "null"); } catch {}
+function toast(text) {
+  const t = $("#toast");
+  t.textContent = text;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 1800);
+}
+function copyNode(id) {
+  const n = nodeOf(id);
+  if (!n) return;
+  clip = JSON.parse(JSON.stringify(n));
+  try { localStorage.setItem("dendo-ugh-clip", JSON.stringify(clip)); } catch {}
+  const more = countDesc(n);
+  toast(`Copied “${n.title}”${more ? ` and ${more} box${more === 1 ? "" : "es"} under it` : ""}. Select a box and press Ctrl+V.`);
+}
+// Pastes a fresh copy with new ids. Links (deps, shares) are kept only when both ends are inside the copy.
+function paste(targetId, at = null) {
+  if (!clip) { toast("Nothing copied yet. Select a box and press Ctrl+C."); return; }
+  const target = targetId ? nodeOf(targetId) : null, map = new Map(), made = [];
+  if (target) { ui.collapsed.delete(target.id); saveUi(); }
+  let rootId = null;
+  mutate(() => {
+    (function build(src, parent) {
+      const n = { ...src, id: newId(parent), priority: null, rank: null, children: [] };
+      delete n.pos; delete n.owner;
+      if (!parent || src === clip) delete n.off;
+      if (!parent && at) n.pos = at;
+      (parent ? parent.children : plan.trees).push(n);
+      reindex();
+      map.set(src.id, n.id);
+      made.push(n);
+      rootId ??= n.id;
+      src.children.forEach(c => build(c, n));
+    })(clip, target);
+    for (const n of made) {
+      n.deps = (n.deps || []).filter(d => map.has(d)).map(d => map.get(d));
+      n.also_under = (n.also_under || []).filter(d => map.has(d)).map(d => map.get(d));
+      n.checklist = (n.checklist || []).map(c => ({ ...c }));
+    }
+    logAct(`pasted a copy of ${clip.id} as ${rootId}${target ? ` under ${target.id}` : " (new tree)"}`);
+  });
+  select(rootId);
+  toast(`Pasted ${made.length} box${made.length === 1 ? "" : "es"}.`);
+}
+
 function moveNode(src, tgt, zone) {
   if (src === tgt || isAncestor(src, tgt) || !index.has(src) || !index.has(tgt)) return;
   const s = index.get(src), t = index.get(tgt);
@@ -559,7 +626,9 @@ function moveNode(src, tgt, zone) {
   if (zone === "inside") { ui.collapsed.delete(tgt); saveUi(); }
   mutate(() => {
     detachRaw(s);
-    delete s.node.pos;
+    delete s.node.pos; delete s.node.off;
+    const np = zone === "inside" ? t.node : t.parent;
+    s.node.also_under = s.node.also_under.filter(d => d !== np.id);
     if (zone === "inside") t.node.children.push(s.node);
     else { const sib = t.parent.children; sib.splice(sib.indexOf(t.node) + (zone === "after" ? 1 : 0), 0, s.node); }
     logAct(zone === "inside" ? `${s.parent ? "moved" : "attached tree"} ${src} under ${tgt}` : `moved ${src} ${zone} ${tgt}`);
@@ -570,6 +639,7 @@ function detach(id, at) {
   if (!e?.parent) return;
   mutate(() => {
     detachRaw(e);
+    delete e.node.off;
     if (at) e.node.pos = at; else delete e.node.pos;
     plan.trees.push(e.node);
     logAct(`detached ${id} into its own tree`);
@@ -590,7 +660,7 @@ function renameId(oldId, nid) {
   saveUi();
   mutate(() => {
     nodeOf(oldId).id = nid;
-    index.forEach(({ node }) => { node.deps = node.deps.map(d => d === oldId ? nid : d); });
+    index.forEach(({ node }) => { node.deps = node.deps.map(d => d === oldId ? nid : d); node.also_under = node.also_under.map(d => d === oldId ? nid : d); });
     (plan.decisions || []).forEach(d => { if (d.node === oldId) d.node = nid; });
     logAct(`renamed id ${oldId} → ${nid}`);
   });
@@ -687,38 +757,62 @@ function toolbar() {
 // ---------- tree layout & animation ----------
 
 // Top-down tidy layout. Each tree is anchored by its root's top-left (tree.pos);
-// trees without a pos are placed to the right of everything else.
+// trees without a pos are placed to the right of everything else. Trees never overlap:
+// when one grows into another, the one further right is pushed right (and keeps that spot).
 function layout() {
-  const pos = new Map(), open = n => !!query || !ui.collapsed.has(n.id), pending = [];
+  const pos = new Map(), open = n => !!query || !ui.collapsed.has(n.id), boxes = [];
   let right = null;
   for (const t of plan.trees) {
     const local = new Map();
-    let slot = 0;
+    let slot = 0, depth = 0;
     (function place(n, d) {
       const kids = open(n) ? n.children : [];
       let x;
       if (!kids.length) x = slot++ * (W + GX);
       else { kids.forEach(c => place(c, d + 1)); x = (local.get(kids[0].id).x + local.get(kids.at(-1).id).x) / 2; }
       local.set(n.id, { x, y: d * (H + GY) });
+      depth = Math.max(depth, d);
     })(t, 0);
     const xs = [...local.values()].map(p => p.x), r = local.get(t.id);
-    const box = { t, local, r, minX: Math.min(...xs), maxX: Math.max(...xs) + W };
-    if (!t.pos) { pending.push(box); continue; }
-    const dx = t.pos.x - r.x, dy = t.pos.y - r.y;
-    for (const [id, p] of local) pos.set(id, { x: p.x + dx, y: p.y + dy });
-    right = Math.max(right ?? -Infinity, box.maxX + dx);
+    boxes.push({ t, local, r, minX: Math.min(...xs), maxX: Math.max(...xs) + W, height: depth * (H + GY) + H });
   }
-  for (const { t, local, r, minX, maxX } of pending) {
+  for (const b of boxes) if (b.t.pos) right = Math.max(right ?? -Infinity, b.maxX + b.t.pos.x - b.r.x);
+  for (const b of boxes) {
+    if (b.t.pos) continue;
     const x0 = right == null ? 0 : right + TREE_GAP;
-    t.pos = { x: Math.round(x0 + r.x - minX), y: 0 };
-    const dx = t.pos.x - r.x;
-    for (const [id, p] of local) pos.set(id, { x: p.x + dx, y: p.y });
-    right = x0 + maxX - minX;
+    b.t.pos = { x: Math.round(x0 + b.r.x - b.minX), y: 0 };
+    right = x0 + b.maxX - b.minX;
+  }
+  const world = b => ({ x0: b.minX + b.t.pos.x - b.r.x, x1: b.maxX + b.t.pos.x - b.r.x, y0: b.t.pos.y, y1: b.t.pos.y + b.height });
+  boxes.sort((a, b) => world(a).x0 - world(b).x0);
+  for (let i = 0; i < boxes.length; i++) {
+    for (let moved = true; moved;) {
+      moved = false;
+      for (let j = 0; j < i; j++) {
+        const a = world(boxes[j]), b = world(boxes[i]);
+        if (a.y0 < b.y1 && b.y0 < a.y1 && b.x0 < a.x1 + TREE_GAP / 2 && a.x0 < b.x1) {
+          // ceil, not round: a sub-pixel push that rounds to 0 would loop forever.
+          boxes[i].t.pos = { x: Math.ceil(boxes[i].t.pos.x + a.x1 + TREE_GAP / 2 - b.x0), y: boxes[i].t.pos.y };
+          moved = true;
+        }
+      }
+    }
+  }
+  // A dragged box keeps its line to the parent; node.off shifts it and everything under it.
+  for (const { t, local, r } of boxes) {
+    const dx = t.pos.x - r.x, dy = t.pos.y - r.y;
+    (function w(n, ox, oy) {
+      const p = local.get(n.id);
+      if (!p) return;
+      if (n !== t && n.off) { ox += n.off.x; oy += n.off.y; }
+      pos.set(n.id, { x: p.x + dx + ox, y: p.y + dy + oy });
+      n.children.forEach(c => w(c, ox, oy));
+    })(t, 0, 0);
   }
   return pos;
 }
 
-const els = new Map(), cur = new Map(), edgeEls = new Map(), depEls = new Map(), dying = new Set();
+const els = new Map(), cur = new Map(), edgeEls = new Map(), shareEls = new Map(), depEls = new Map(), dying = new Set();
 let from = new Map(), to = new Map(), animStart = 0, raf = 0, depList = [], drag = null;
 
 function liveAnc(id, pos) {
@@ -755,6 +849,7 @@ function renderTree() {
     to.set(id, anc ? { ...pos.get(anc), o: 0 } : { ...c, o: 0 });
   }
   syncEdges();
+  syncShares(pos);
   syncDeps(pos);
   from = new Map([...cur].map(([k, v]) => [k, { ...v }]));
   animStart = performance.now();
@@ -795,6 +890,20 @@ function syncEdges() {
   for (const id of els.keys())
     if (index.get(id)?.parent && !edgeEls.has(id)) { const p = svgPath("edge"); $("#edges").append(p); edgeEls.set(id, p); }
   for (const [id, p] of edgeEls) if (!els.has(id) || !index.get(id)?.parent) { p.remove(); edgeEls.delete(id); }
+}
+let shareList = [];
+function syncShares(pos) {
+  shareList = [];
+  index.forEach(({ node }) => {
+    if (!pos.has(node.id)) return;
+    for (const pid of node.also_under) {
+      const fr = liveAnc(pid, pos), key = fr + ">" + node.id;
+      if (fr && fr !== node.id && !shareList.some(x => x.key === key)) shareList.push({ key, from: fr, to: node.id });
+    }
+  });
+  const keep = new Set(shareList.map(d => d.key));
+  for (const [k, p] of shareEls) if (!keep.has(k)) { p.remove(); shareEls.delete(k); }
+  for (const d of shareList) if (!shareEls.has(d.key)) { const p = svgPath("edge"); $("#edges").append(p); shareEls.set(d.key, p); }
 }
 function syncDeps(pos) {
   depList = [];
@@ -846,6 +955,10 @@ function paint() {
     const x1 = pc.x + W / 2, y1 = pc.y + H, x2 = c.x + W / 2, y2 = c.y, my = (y1 + y2) / 2;
     p.setAttribute("d", `M${x1},${y1}C${x1},${my} ${x2},${my} ${x2},${y2}`);
     p.style.opacity = Math.min(c.o, pc.o);
+  }
+  for (const d of shareList) {
+    const a = cur.get(d.from), b = cur.get(d.to), p = shareEls.get(d.key);
+    if (a && b && p) { p.setAttribute("d", depPath(a, b)); p.style.opacity = Math.min(a.o, b.o); }
   }
   for (const d of depList) {
     const a = cur.get(d.from), b = cur.get(d.to);
@@ -912,6 +1025,7 @@ function screenToWorld(cx, cy) {
   return { x: Math.round((cx - r.left - ui.panX) / ui.zoom), y: Math.round((cy - r.top - ui.panY) / ui.zoom) };
 }
 function tidy() {
+  for (const e of index.values()) delete e.node.off;
   const pos = layout();
   const boxes = plan.trees.map(t => {
     const xs = [];
@@ -919,7 +1033,10 @@ function tidy() {
     return { t, minX: Math.min(...xs), maxX: Math.max(...xs) + W, rootX: pos.get(t.id).x };
   }).sort((a, b) => a.minX - b.minX);
   let x = 0;
-  mutate(() => { for (const b of boxes) { b.t.pos = { x: Math.round(x + b.rootX - b.minX), y: 0 }; x += b.maxX - b.minX + TREE_GAP; } });
+  mutate(() => {
+    for (const b of boxes) { b.t.pos = { x: Math.round(x + b.rootX - b.minX), y: 0 }; x += b.maxX - b.minX + TREE_GAP; }
+    for (const e of index.values()) delete e.node.off;
+  });
   fit();
 }
 
@@ -1015,7 +1132,7 @@ function dragMove(ev, dx, dy) {
   setDropTarget(target, zone);
   const h = $("#hint"), t = target && target.dataset.id;
   h.textContent = t ? (zone === "inside" ? `Put under ${t}` : `${zone === "before" ? "Before" : "After"} ${t}`)
-    : index.get(drag.id).parent ? "Drop here to make it its own tree" : "Move tree";
+    : index.get(drag.id).parent ? "Move here (press D to detach)" : "Move tree";
   h.style.transform = `translate(${ev.clientX + 16}px,${ev.clientY + 18}px)`;
   h.classList.add("show");
 }
@@ -1038,9 +1155,12 @@ function endDrag(cancel) {
   d.target?.classList.remove("drop-inside", "drop-before", "drop-after");
   if (cancel) { renderTree(); return; }
   if (d.target) { moveNode(d.id, d.target.dataset.id, d.zone); return; }
-  const c = cur.get(d.id), at = { x: Math.round(c.x), y: Math.round(c.y) }, e = index.get(d.id);
+  const c = cur.get(d.id), at = { x: Math.round(c.x), y: Math.round(c.y) }, e = index.get(d.id), b = d.base.get(d.id);
   if (!e.parent) mutate(() => { e.node.pos = at; });
-  else detach(d.id, at);
+  else mutate(() => {
+    const o = e.node.off || { x: 0, y: 0 };
+    e.node.off = { x: Math.round(o.x + c.x - b.x), y: Math.round(o.y + c.y - b.y) };
+  });
 }
 function startRename(id) {
   if (ui.view !== "tree") { const t = $("#f-title"); t?.focus(); t?.select(); return; }
@@ -1101,17 +1221,21 @@ function nodeMenuHtml(id) {
     <div class="mrow">${(plan.lanes || []).map(l => `<button data-act="lane" data-v="${esc(l.id)}" title="${esc(l.name)}"><span class="sw" style="background:${esc(l.color)}"></span></button>`).join("")}<button data-act="lane" data-v="" title="Inherit lane">—</button></div>
     <div class="mrow">${COLORS.map(c => `<button data-act="color" data-v="${c}" title="Colour"><span class="sw" style="background:${c}"></span></button>`).join("")}<button data-act="color" data-v="" title="No colour">—</button></div>
     <div class="msep"></div>
-    ${multi ? "" : mi("rename", "Rename", "F2") + mi("child", "Add child", "Tab") + mi("sibling", "Add sibling", "Enter")}
+    ${multi ? "" : mi("rename", "Rename", "Enter") + mi("child", "Add child", "Right Shift") + mi("sibling", "Add sibling", "Tab")}
     ${mi("crit", "Toggle critical ★")}
     ${!multi && n.children.length ? mi("toggle", ui.collapsed.has(id) ? "Expand" : "Collapse", "Space") : ""}
-    ${!multi && e.parent ? mi("detach", "Detach into its own tree") : ""}
+    ${!multi && e.parent ? mi("detach", "Detach into its own tree", "D") : ""}
     ${multi ? "" : mi("attach", e.parent ? "Move under…" : "Attach tree under…")}
+    ${!multi && e.parent ? mi("share", "Also put under…") : ""}
+    <div class="msep"></div>
+    ${multi ? "" : mi("copy", "Copy", "Ctrl+C")}
+    ${!multi && clip ? mi("paste", "Paste under this", "Ctrl+V") : ""}
     <div class="msep"></div>
     <button class="mi bad" data-act="delete">Delete${multi ? ` ${ids.length}` : n.children.length ? ` (+${countDesc(n)} inside)` : ""}<kbd>Del</kbd></button>`;
 }
 function bgMenuHtml() {
   const mi = (act, label, key = "") => `<button class="mi" data-act="${act}">${label}${key ? `<kbd>${key}</kbd>` : ""}</button>`;
-  return mi("newtree", "New tree here") + mi("tidy", "Tidy trees side by side") + mi("fit", "Fit to screen", "F") +
+  return mi("newtree", "New tree here") + (clip ? mi("paste", "Paste as a new tree here") : "") + mi("tidy", "Tidy trees side by side") + mi("fit", "Fit to screen", "F") +
     `<div class="msep"></div>` + mi("expand", "Expand all") + mi("collapse", "Collapse all");
 }
 function menuAct(act, v, id, x, y) {
@@ -1128,8 +1252,11 @@ function menuAct(act, v, id, x, y) {
     case "toggle": toggle(id); break;
     case "detach": detach(id); break;
     case "attach": openCmd(`attach ${id} to `); break;
+    case "share": openCmd(`share ${id} with `); break;
     case "delete": deleteNodes(ids); break;
     case "newtree": newTree(null, screenToWorld(x, y)); break;
+    case "copy": copyNode(id); break;
+    case "paste": paste(id, id ? null : screenToWorld(x, y)); break;
     case "tidy": tidy(); break;
     case "fit": fit(); break;
     case "expand": expandAll(); break;
@@ -1197,6 +1324,12 @@ function cmdActions(raw) {
   if ((m = q.match(/^add\s+(\S+)\s+(.+)$/i)) && resolveId(m[1])) {
     const id = resolveId(m[1]), t = m[2].trim(); add(`Add “${t}” under ${id}`, () => addChild(id, t), "add");
   }
+  if ((m = q.match(/^(?:share|link)\s+(\S+)\s+(?:with\s+|under\s+|to\s+)?(\S*)$/i)) && resolveId(m[1])) {
+    const a = resolveId(m[1]), part = m[2].toLowerCase();
+    [...index.values()].map(e => e.node).filter(n => canShare(a, n.id) && score(n, part || n.id.toLowerCase()) > 0)
+      .sort((x, y) => score(y, part) - score(x, part)).slice(0, 6)
+      .forEach(n => add(`Also put ${a} under ${n.id} · ${n.title}`, () => addShare(a, n.id), "share"));
+  }
   if ((m = q.match(/^new(?:\s+tree)?\s+(.+)$/i))) { const t = m[1].trim(); add(`New tree “${t}”`, () => newTree(t), "tree"); }
   if ((m = q.match(/^(?:attach|move|mv)\s+(\S+)\s+(?:to\s+|under\s+|into\s+)?(\S+)$/i))) {
     const a = resolveId(m[1]), b = resolveId(m[2]);
@@ -1234,7 +1367,7 @@ function cmdActions(raw) {
     STATIC.forEach(([l, , run]) => add(l, run, "action"));
     return out;
   }
-  if (!/^(set|add|new|attach|move|mv|detach|delete|rm|decide|log|note|prio|priority)\s/i.test(q)) {
+  if (!/^(set|add|new|share|link|attach|move|mv|detach|delete|rm|decide|log|note|prio|priority)\s/i.test(q)) {
     [...index.values()].map(e => ({ n: e.node, s: score(e.node, L) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 8)
       .forEach(({ n }) => add(`${n.id} · ${n.title}`, () => { if (ui.view !== "tree" && !isTask(n)) setView("tree"); select(n.id); }, "go to"));
     STATIC.filter(([l, k]) => (l + " " + k).toLowerCase().includes(L)).forEach(([l, , run]) => add(l, run, "action"));
@@ -1445,6 +1578,9 @@ function nodePanel(n) {
     .map(x => `<option value="${esc(x.node.id)}">${esc(x.node.id)} — ${esc(x.node.title)}</option>`).join("");
   const attachOpts = [...index.values()].filter(x => x.node.id !== n.id && !isAncestor(n.id, x.node.id) && x.node.id !== e.parent?.id)
     .map(x => `<option value="${esc(x.node.id)}">${esc(x.node.id)} — ${esc(x.node.title)}</option>`).join("");
+  const shareOpts = [...index.values()].filter(x => canShare(n.id, x.node.id))
+    .map(x => `<option value="${esc(x.node.id)}">${esc(x.node.id)} — ${esc(x.node.title)}</option>`).join("");
+  const sharedKids = [...index.values()].filter(x => x.node.also_under.includes(n.id)).map(x => x.node.id);
   const done = n.checklist.filter(c => c.done).length;
   const decs = (plan.decisions || []).map((d, i) => [d, i]).filter(([d]) => d.node === n.id);
   return `
@@ -1463,6 +1599,11 @@ function nodePanel(n) {
   <select data-f="adddep"><option value="">+ add dependency…</option>${depOpts}</select>
   <label>Needed by</label>
   <div class="chips">${neededBy.map(d => chip(d)).join("") || `<span class="muted">nothing</span>`}</div>
+  ${e.parent ? `<label>Also under <span class="k">extra boxes above this one</span></label>
+  <div class="chips">${n.also_under.map(d => `<span class="chip" data-act="go" data-v="${esc(d)}"><b>${esc(d)}</b> ${esc(nodeOf(d)?.title ?? "?")}` +
+    `<button data-act="rmshare" data-v="${esc(d)}" title="Remove">×</button></span>`).join("") || `<span class="muted">nothing</span>`}</div>
+  <select data-f="addshare"><option value="">+ also put under…</option>${shareOpts}</select>` : ""}
+  ${sharedKids.length ? `<label>Shared boxes under this</label><div class="chips">${sharedKids.map(d => chip(d)).join("")}</div>` : ""}
   <label>Checklist ${n.checklist.length ? `<span class="k">${done}/${n.checklist.length}</span>` : ""}</label>
   <div class="cl">${n.checklist.map((c, i) => `<div class="cli"><input type="checkbox" data-f="cl-done" data-i="${i}" ${c.done ? "checked" : ""}>` +
     `<input class="clt${c.done ? " done" : ""}" data-f="cl-text" data-i="${i}" value="${esc(c.text)}"><button data-act="clx" data-v="${i}" title="Remove">×</button></div>`).join("")}
@@ -1476,7 +1617,7 @@ function nodePanel(n) {
   ${decs.map(([d, i]) => decisionHtml(d, i, false)).join("")}
   <input data-f="dec-new" placeholder="+ record a decision about this, press Enter" style="margin-top:6px">
   <label>Tree</label>
-  <div class="actions"><button data-act="child">+ child <kbd>Tab</kbd></button><button data-act="sibling">+ sibling <kbd>Enter</kbd></button>
+  <div class="actions"><button data-act="child">+ child <kbd>Right Shift</kbd></button><button data-act="sibling">+ sibling <kbd>Tab</kbd></button>
     ${e.parent ? `<button data-act="detach">Detach</button>` : ""}</div>
   <select data-f="attach" style="margin-top:6px"><option value="">${e.parent ? "Move under…" : "Attach this tree under…"}</option>${attachOpts}</select>
   <div class="actions"><button data-act="delete" class="bad">Delete${n.children.length ? ` (+${countDesc(n)} inside)` : ""}</button></div>`;
@@ -1502,11 +1643,11 @@ function overviewPanel() {
   const sec = (k, title, body) => `<details data-sec="${k}" ${ui.open[k] ? "open" : ""}><summary>${title}</summary><div class="sec">${body}</div></details>`;
   const keys = [
     ["Click / Shift+click", "select / add to selection"], ["Double-click", "rename in place"], ["Right-click", "menu"],
-    ["Drag onto a node", "middle = under it, left/right edge = before/after"], ["Drag to empty space", "detach into its own tree"],
+    ["Drag onto a node", "middle = under it, left/right edge = before/after"], ["Drag to empty space", "move it (stays attached)"], ["D", "detach into its own tree"],
     ["Drag a tree's top node", "move the whole tree"], ["Drag background", "pan · wheel scrolls · Ctrl+wheel zooms"],
-    ["Ctrl+K", "command bar"], ["Tab / Enter", "add child / sibling"], ["Del", "delete (Ctrl+Z brings it back)"],
+    ["Ctrl+K", "command bar"], ["Ctrl+C / Ctrl+V", "copy a box (and what's under it) / paste it under the selected box"], ["Right Shift / Tab", "add child / sibling"], ["Del", "delete (Ctrl+Z brings it back)"],
     ["1–5", "status: idea, todo, doing, blocked, done"], ["Shift+1–4 / 0", "priority: now, next, later, someday / none"],
-    ["Space · F2", "expand/collapse · rename"], ["Arrows", "tree: parent/child/siblings · list: up/down"],
+    ["Enter · Space", "rename · expand/collapse"], ["Arrows", "tree: parent/child/siblings · list: up/down"],
     ["Alt+↑↓ (list)", "move task up/down"], ["V · F · /", "switch view · fit · filter"], ["Esc", "close / clear / deselect"],
   ];
   return sec("progress", "Progress",
@@ -1542,6 +1683,7 @@ panel.addEventListener("click", e => {
     case "delete": deleteNodes(ids); break;
     case "go": select(v); break;
     case "clear-sel": select(null); break;
+    case "rmshare": dropShare(selId, v); break;
     case "rmdep": mutate(() => { n.deps = n.deps.filter(d => d !== v); logAct(`${n.id} no longer depends on ${v}`); }); break;
     case "clx": mutate(() => { n.checklist.splice(+v, 1); }); break;
     case "notes-mode":
@@ -1585,6 +1727,7 @@ panel.addEventListener("change", e => {
   else if (f === "bulk-lane") { if (v !== "__") setLane([...sel], v || null); }
   else if (f === "adddep" && v) mutate(() => { n.deps.push(v); logAct(`${n.id} now depends on ${v}`); });
   else if (f === "attach" && v) moveNode(n.id, v, "inside");
+  else if (f === "addshare" && v) addShare(n.id, v);
   else if (f === "cl-done") mutate(() => { n.checklist[+e.target.dataset.i].done = e.target.checked; });
 });
 panel.addEventListener("keydown", e => {
@@ -1648,6 +1791,8 @@ document.addEventListener("keydown", e => {
   if (typing) return;
   if (mod && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if (mod && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
+  if (mod && e.key.toLowerCase() === "c" && selId) { e.preventDefault(); copyNode(selId); return; }
+  if (mod && e.key.toLowerCase() === "v") { e.preventDefault(); paste(selId); return; }
   if (mod || (e.altKey && !e.key.startsWith("Arrow"))) return;
   if (e.key === "/") { e.preventDefault(); $("#search").focus(); return; }
   if (e.key === "v" || e.key === "V") { setView(ui.view === "tree" ? "list" : "tree"); return; }
@@ -1660,12 +1805,13 @@ document.addEventListener("keydown", e => {
   if (dm && e.shiftKey && +dm[1] <= 4) { e.preventDefault(); setPrio(ids, +dm[1] ? PRIOS[+dm[1] - 1] : null); return; }
   const ent = index.get(selId), sibs = ent.parent ? ent.parent.children : plan.trees, i = sibs.indexOf(ent.node);
   const keys = {
-    Tab: () => addChild(selId),
-    Enter: () => addSibling(selId),
+    Tab: () => addSibling(selId),
+    Enter: () => startRename(selId),
     Delete: () => deleteNodes(ids),
     Backspace: () => deleteNodes(ids),
     " ": () => toggle(selId),
     F2: () => select(selId, { rename: true }),
+    d: () => sel.size === 1 && ent.parent && detach(selId, ui.view === "tree" && cur.get(selId) ? { x: Math.round(cur.get(selId).x), y: Math.round(cur.get(selId).y) } : undefined),
   };
   if (ui.view === "tree") Object.assign(keys, {
     ArrowUp: () => ent.parent && select(ent.parent.id),
@@ -1678,6 +1824,18 @@ document.addEventListener("keydown", e => {
     ArrowDown: () => e.altKey ? listNudge(selId, 1) : listStep(1),
   });
   if (keys[e.key]) { e.preventDefault(); keys[e.key](); }
+});
+
+// Right Shift on its own adds a child. It fires on release, and only if no other key or click
+// happened while it was held, so Shift+1–4 and Shift+click still work.
+let rshiftAlone = false;
+document.addEventListener("keydown", e => { rshiftAlone = e.code === "ShiftRight" && !e.repeat ? true : e.code === "ShiftRight" && rshiftAlone; }, true);
+document.addEventListener("pointerdown", () => { rshiftAlone = false; }, true);
+document.addEventListener("keyup", e => {
+  if (e.code !== "ShiftRight" || !rshiftAlone) return;
+  rshiftAlone = false;
+  if (!selId || $("#cmd").classList.contains("show") || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) return;
+  addChild(selId);
 });
 
 window.addEventListener("beforeunload", e => { if (rev !== savedRev) e.preventDefault(); });

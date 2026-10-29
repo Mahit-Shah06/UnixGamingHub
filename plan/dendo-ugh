@@ -17,6 +17,7 @@ Write  (agents: pass --by claude, or set DENDO_BY=claude)
   dendo-ugh mv ID TARGET         TARGET '-' detaches into its own tree; --before/--after for siblings
   dendo-ugh rm ID
   dendo-ugh dep ID X Y [--drop Z]
+  dendo-ugh share ID P Q [--drop R]  also show ID under P and Q (one box, several parents)
   dendo-ugh check ID "item" | N  add a checklist item, or toggle item N
   dendo-ugh log "text"
   dendo-ugh decide "text" [--why "..."] [--node ID]
@@ -78,7 +79,7 @@ def migrate(plan):
     for n, *_ in walk(plan):
         for k, v in defaults.items():
             n.setdefault(k, v)
-        for k in ("deps", "checklist", "children"):
+        for k in ("deps", "checklist", "children", "also_under"):
             n.setdefault(k, [])
     return plan
 
@@ -161,8 +162,12 @@ class Plan:
         waits = [d for d in deps if d in self.index and not self.is_done(self.index[d][0])]
         return ("waiting", waits) if waits else ("ready", [])
 
+    # A tree whose root has owner "claude" holds Claude's suggestions, not the user's plan.
+    def mine(self, n):
+        return self.index[n["id"]][2].get("owner") != "claude"
+
     def tasks(self):
-        return [n for n in self.nodes() if not n["children"] or n["priority"]]
+        return [n for n in self.nodes() if (not n["children"] or n["priority"]) and self.mine(n)]
 
     def sort_key(self, n):
         p = PRIOS.index(n["priority"]) if n["priority"] in PRIOS else len(PRIOS)
@@ -211,7 +216,7 @@ class Plan:
 
 def blank(id, title):
     return {"id": id, "title": title, "status": "todo", "color": None, "lane": None, "critical": False, "priority": None,
-            "rank": None, "deps": [], "notes": "", "checklist": [], "children": []}
+            "rank": None, "deps": [], "notes": "", "checklist": [], "children": [], "also_under": []}
 
 
 def contains(a, b):
@@ -252,8 +257,8 @@ def ago(iso):
 def cmd_brief(p, a):
     ts = p.tasks()
     ready = sorted((n for n in ts if p.readiness(n)[0] == "ready" and n["status"] != "doing"), key=p.sort_key)
-    doing = [n for n in p.nodes() if n["status"] == "doing"]
-    blocked = [n for n in p.nodes() if n["status"] == "blocked"]
+    doing = [n for n in p.nodes() if n["status"] == "doing" and p.mine(n)]
+    blocked = [n for n in p.nodes() if n["status"] == "blocked" and p.mine(n)]
     done = sum(p.is_done(n) for n in ts)
     w = max([len(n["id"]) for n in p.nodes()] + [4])
     print(f"UGH plan · {len(p.data['trees'])} tree(s) · {len(ts)} tasks · {done} done · {len(ready)} ready to start\n")
@@ -314,8 +319,13 @@ def cmd_show(p, a):
     for m in p.nodes():
         if n["id"] in m["deps"]:
             print(f"needed by  {row(m)}")
+    for x in n["also_under"]:
+        print(f"also under {row(p.node(x))}" if x in p.index else f"also under {x} (missing)")
     for c in n["children"]:
         print(f"child      {row(c)}")
+    for m in p.nodes():
+        if n["id"] in m["also_under"]:
+            print(f"shared     {row(m)}")
     for i, c in enumerate(n["checklist"], 1):
         print(f"check {i:<4} [{'x' if c['done'] else ' '}] {c['text']}")
     for d in p.data["decisions"]:
@@ -412,6 +422,7 @@ def cmd_mv(p, a):
             die(f"{n['id']} is already its own tree")
         p.detach(n, parent)
         n.pop("pos", None)
+        n.pop("off", None)
         p.data["trees"].append(n)
         p.log(f"detached {n['id']} into its own tree")
     else:
@@ -422,6 +433,9 @@ def cmd_mv(p, a):
             die(f"{t['id']} is a tree root; it has no siblings")
         p.detach(n, parent)
         n.pop("pos", None)
+        n.pop("off", None)
+        new_parent = tparent if (a.before or a.after) else t
+        n["also_under"] = [d for d in n["also_under"] if d != new_parent["id"]]
         if a.before or a.after:
             sib = tparent["children"]
             sib.insert(sib.index(t) + (1 if a.after else 0), n)
@@ -439,6 +453,7 @@ def cmd_rm(p, a):
     p.detach(n, parent)
     for m in p.nodes():
         m["deps"] = [d for d in m["deps"] if d not in gone]
+        m["also_under"] = [d for d in m["also_under"] if d not in gone]
     for d in p.data["decisions"]:
         if d.get("node") in gone:
             d["node"] = None
@@ -458,6 +473,20 @@ def cmd_dep(p, a):
     p.log(f"{n['id']} depends on {', '.join(n['deps']) or 'nothing'}")
     p.save()
     print(f"{n['id']} depends on: {', '.join(n['deps']) or 'nothing'}")
+
+
+def cmd_share(p, a):
+    n, parent, *_ = p.get(a.id)
+    for x in a.parents:
+        t = p.node(x)
+        if t is n or t is parent or t["id"] in n["also_under"] or contains(n, t):
+            die(f"{n['id']} can't also go under {t['id']}")
+        n["also_under"].append(t["id"])
+    for x in a.drop or []:
+        n["also_under"] = [d for d in n["also_under"] if d.lower() != x.lower()]
+    p.log(f"{n['id']} is also under {', '.join(n['also_under']) or 'nothing'}")
+    p.save()
+    print(f"{n['id']} is also under: {', '.join(n['also_under']) or 'nothing'}")
 
 
 def cmd_check(p, a):
@@ -634,6 +663,10 @@ def main():
     s = sub.add_parser("dep", parents=[common])
     s.add_argument("id")
     s.add_argument("add", nargs="*")
+    s.add_argument("--drop", nargs="+")
+    s = sub.add_parser("share", parents=[common])
+    s.add_argument("id")
+    s.add_argument("parents", nargs="*")
     s.add_argument("--drop", nargs="+")
     s = sub.add_parser("check", parents=[common])
     s.add_argument("id")

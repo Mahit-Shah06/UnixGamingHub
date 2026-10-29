@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updated": "2026-10-29T14:30:07.053Z",
+  "updated": "2026-10-29T17:21:53.721Z",
   "lanes": [],
   "trees": [
     {
@@ -14,14 +14,1974 @@
       "deps": [],
       "notes": "",
       "checklist": [],
-      "children": [],
+      "children": [
+        {
+          "id": "T1.1",
+          "title": "PC stats",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.1.1",
+              "title": "Read Sensors",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.1.1.1",
+                  "title": "CPU: temp, usage, power, speed",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": "now",
+                  "rank": 1,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.1.1.2",
+                  "title": "GPU: temp, usage, power, speed",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": "now",
+                  "rank": 2,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.1.1.3",
+                  "title": "Fans, battery",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.1.1.4",
+                  "title": "Read all sensors and show its min, max, mean",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "T1.1.2",
+              "title": "Keep History, logs, errors.",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.1.4",
+                  "title": "Create proper game logs.",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "T1.1.3",
+              "title": "Alerts",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T1.2",
+          "title": "Game Library",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.2.1",
+              "title": "Find Installed Games",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.2.2",
+              "title": "Launch games",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.2.3",
+              "title": "Store multiple accounts and use them.",
+              "status": "idea",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.2.4",
+              "title": "Install and updates",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.2.5",
+              "title": "Play time",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.2.6",
+              "title": "Per-game profile",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Saved per game, applied when it launches, undone when it closes.",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.2.6.1",
+                  "title": "Mouse sensitivity",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "You choose how: on the mouse itself, the system setting, or our own scaling. Options that don't work on your PC show up grayed out.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T1.2.6.2",
+                  "title": "Controller & keys",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T1.2.6.3",
+                  "title": "Volume & sound",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T1.2.6.4",
+                  "title": "RGB Lighting",
+                  "status": "todo",
+                  "color": "#14b8a6",
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [
+                    "T1.3"
+                  ],
+                  "notes": "Uses the RGB Lighting and Power Settings parts.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T1.2.6.5",
+                  "title": "Power Settings",
+                  "status": "todo",
+                  "color": "#eab308",
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [
+                    "T1.6"
+                  ],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T1.5",
+          "title": "Customisation",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.5.1",
+              "title": "Settings",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.5.2",
+              "title": "Themes",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.5.2.1",
+                  "title": "Screens",
+                  "status": "todo",
+                  "color": "#3b82f6",
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [
+                    "T1.5.1",
+                    "T1.5.3"
+                  ],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "T1.5.3",
+              "title": "Plugins & Scripts",
+              "status": "idea",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.5.4",
+              "title": "Customisable Shortcut keys",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "The omen button, that should be by default the one to open the overlay, shift+omen key for either the GUI or the pop-up bar whatev thing that is attached idrk. And user can obviously customize it.",
+              "checklist": [],
+              "children": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T1.6",
+          "title": "Power Settings",
+          "status": "todo",
+          "color": "#eab308",
+          "lane": null,
+          "critical": true,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.6.1",
+              "title": "Power Profiles",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.6.2",
+              "title": "CPU power",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.6.2.1",
+                  "title": "Undervolt",
+                  "status": "idea",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.6.2.2",
+                  "title": "Overclock",
+                  "status": "idea",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "Check what's possible first. The laptop CPU is locked, and the GPU can be lowered more easily than raised.",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.6.2.3",
+                  "title": "Tuning power & frequency, capping.",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "T1.6.3",
+              "title": "GPU power",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.6.3.1",
+                  "title": "Tuning power & frequency, capping.",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.6.3.2",
+                  "title": "Overclock",
+                  "status": "idea",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "Check what's possible first. The laptop CPU is locked, and the GPU can be lowered more easily than raised.",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.6.3.3",
+                  "title": "Undervolt",
+                  "status": "idea",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "T1.6.4",
+              "title": "Fan settings",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.6.4.1",
+                  "title": "Fan Curve",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                },
+                {
+                  "id": "T1.6.4.2",
+                  "title": "Fan Profiles",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "also_under": [],
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": []
+                }
+              ]
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T1.4",
+          "title": "Releases",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Your 'Version Manager' idea.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.4.1",
+              "title": "Version numbers & changelog",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T1.4.2",
+              "title": "Packages",
+              "status": "idea",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "deb, Flatpak, Arch (AUR), so it works on any distro.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T1.3",
+          "title": "RGB Lighting",
+          "status": "todo",
+          "color": "#14b8a6",
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Plug in a device and it just lights up, like SignalRGB. There is no single RGB language: each brand speaks its own, so we keep a list of devices we know how to talk to.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.3.1",
+              "title": "Detect devices",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "When something is plugged in, read its USB ID (like 30fa:1440) and look it up in the device list.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T1.3.2",
+              "title": "Device list",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "One small file per device that says how to talk to it. Supporting a new device = adding one file.",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T1.3.2.1",
+                  "title": "Keyboard (4 zones)",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "HP OMEN keyboard. Needs a small kernel module of our own.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T1.3.2.2",
+                  "title": "Mouse",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "Yours is an 'INSTANT USB GAMING MOUSE' (USB ID 30fa:1440). It has a private control channel. To learn its messages, we watch what its Windows app sends.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                }
+              ],
+              "also_under": []
+            },
+            {
+              "id": "T1.3.3",
+              "title": "Standard RGB devices",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Newer devices speak one shared language (HID LampArray). These work with no device file at all. Your current mouse doesn't.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T1.3.4",
+              "title": "Effects",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Pick one effect (solid colour, wave, colour by CPU temp) and every device shows it together.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T3",
+          "title": "Screens",
+          "status": "todo",
+          "color": "#3b82f6",
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "The places things show up. Every feature (stats, games, power) appears on some of these.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T3.1",
+              "title": "Terminal command (ugh)",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": "now",
+              "rank": 3,
+              "deps": [],
+              "notes": "Easiest screen to build first. Good for learning and testing.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T3.2",
+              "title": "Tray icon",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Small popup from the top bar.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T3.3",
+              "title": "In-game overlay",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Stats on top of the game, like MangoHud.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T3.4",
+              "title": "Full window (GUI)",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Only open when you want it, so it uses nothing in the background.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T1.7",
+          "title": "In-built benchmarks",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "also_under": [],
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T1.7.1",
+              "title": "CPU",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.7.2",
+              "title": "GPU",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.7.3",
+              "title": "SSD",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            },
+            {
+              "id": "T1.7.4",
+              "title": "Fans",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "also_under": [],
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": []
+            }
+          ]
+        }
+      ],
       "pos": {
-        "x": 32,
-        "y": -87
+        "x": 963,
+        "y": -853
+      },
+      "color": "#ef4444",
+      "also_under": []
+    },
+    {
+      "id": "T2",
+      "title": "Claude's ideas",
+      "status": "todo",
+      "color": "#a855f7",
+      "lane": null,
+      "critical": false,
+      "priority": null,
+      "rank": null,
+      "deps": [],
+      "notes": "My suggestions. Copy any box you like into your tree (Ctrl+C here, select your box, Ctrl+V). I only edit this tree, never yours.",
+      "checklist": [],
+      "children": [
+        {
+          "id": "T2.1",
+          "title": "PC stats",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Everything starts here: the other parts need these numbers.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.1.1",
+              "title": "Read sensors",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Linux puts live numbers in plain files under /sys. We read those files. No drivers needed.",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T2.1.1.1",
+                  "title": "CPU: temp, usage, speed",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T2.1.1.2",
+                  "title": "GPUs: temp, usage, power",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "You have two: the built-in 680M and the RX card. Show both.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T2.1.1.3",
+                  "title": "Fans & battery",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                }
+              ],
+              "also_under": []
+            },
+            {
+              "id": "T2.1.2",
+              "title": "Keep history",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Save the numbers every second or so, so you can see a graph of the last game session.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.1.3",
+              "title": "Alerts",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "e.g. warn when the GPU goes over 90 °C.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.2",
+          "title": "Screens",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "The places things show up. Every feature (stats, games, power) appears on some of these.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.2.1",
+              "title": "Terminal command (ugh)",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Easiest screen to build first. Good for learning and testing.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.2.2",
+              "title": "Tray icon",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Small popup from the top bar.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.2.3",
+              "title": "In-game overlay",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Stats on top of the game, like MangoHud.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.2.4",
+              "title": "Full window (GUI)",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Only open when you want it, so it uses nothing in the background.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.3",
+          "title": "Background helper",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "A small program that runs quietly, does the actual work, and lets every screen ask it for data. Keeps the screens light.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.3.1",
+              "title": "Talk to the screens",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.3.2",
+              "title": "Admin-only actions",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Changing power or fans needs admin rights. Keep that part tiny and careful.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.4",
+          "title": "Game Library",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.4.1",
+              "title": "Find installed games",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Steam, Heroic (Epic/GOG), Lutris.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.4.2",
+              "title": "Launch games",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.4.3",
+              "title": "Store accounts",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Log in to several Steam, Epic and GOG accounts. Passwords never stored, only login tokens in the system keyring.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.4.4",
+              "title": "Install & update",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.4.5",
+              "title": "Covers & info",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.4.6",
+              "title": "Play time",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "How long you played each game, and the stats during it.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.5",
+          "title": "Per-game settings",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Saved per game, applied when it launches, undone when it closes.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.5.1",
+              "title": "Mouse sensitivity",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "You choose how: on the mouse itself, the system setting, or our own scaling. Options that don't work on your PC show up grayed out.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.5.2",
+              "title": "Controller & keys",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.5.3",
+              "title": "Volume & sound",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.5.4",
+              "title": "Lighting & power",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Uses the RGB Lighting and Power Settings parts.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.6",
+          "title": "RGB Lighting",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Plug in a device and it just lights up, like SignalRGB. There is no single RGB language: each brand speaks its own, so we keep a list of devices we know how to talk to.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.6.3",
+              "title": "Detect devices",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "When something is plugged in, read its USB ID (like 30fa:1440) and look it up in the device list.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.6.4",
+              "title": "Device list",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "One small file per device that says how to talk to it. Supporting a new device = adding one file.",
+              "checklist": [],
+              "children": [
+                {
+                  "id": "T2.6.1",
+                  "title": "Keyboard (4 zones)",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "HP OMEN keyboard. Needs a small kernel module of our own.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                },
+                {
+                  "id": "T2.6.2",
+                  "title": "Mouse",
+                  "status": "todo",
+                  "color": null,
+                  "lane": null,
+                  "critical": false,
+                  "priority": null,
+                  "rank": null,
+                  "deps": [],
+                  "notes": "Yours is an 'INSTANT USB GAMING MOUSE' (USB ID 30fa:1440). It has a private control channel. To learn its messages, we watch what its Windows app sends.",
+                  "checklist": [],
+                  "children": [],
+                  "also_under": []
+                }
+              ],
+              "also_under": []
+            },
+            {
+              "id": "T2.6.5",
+              "title": "Standard RGB devices",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Newer devices speak one shared language (HID LampArray). These work with no device file at all. Your current mouse doesn't.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.6.6",
+              "title": "Effects",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Pick one effect (solid colour, wave, colour by CPU temp) and every device shows it together.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.7",
+          "title": "Power Settings",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.7.1",
+              "title": "Laptop mode",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "HP's cool / balanced / performance switch.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.7.2",
+              "title": "CPU power",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.7.3",
+              "title": "GPU power",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.7.4",
+              "title": "Fan control",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.8",
+          "title": "Customisation",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.8.1",
+              "title": "Settings screen",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Every option is visible. If your PC can't do something, it's grayed out with the reason.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.8.2",
+              "title": "Themes",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.8.3",
+              "title": "Plugins & scripts",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T2.9",
+          "title": "Releases",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Your 'Version Manager' idea.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T2.9.1",
+              "title": "Version numbers & changelog",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T2.9.2",
+              "title": "Packages",
+              "status": "todo",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "deb, Flatpak, Arch (AUR), so it works on any distro.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        }
+      ],
+      "also_under": [],
+      "owner": "claude",
+      "pos": {
+        "x": 961,
+        "y": -920
+      }
+    },
+    {
+      "id": "T4",
+      "title": "Tech-Specs",
+      "status": "todo",
+      "color": "#ef4444",
+      "lane": null,
+      "critical": false,
+      "priority": null,
+      "rank": null,
+      "also_under": [],
+      "deps": [],
+      "notes": "",
+      "checklist": [],
+      "children": [
+        {
+          "id": "T4.1",
+          "title": "Language: Rust",
+          "status": "done",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Main language. Others allowed where they fit: web for the GUI, C++ for the overlay, bash for small scripts.",
+          "checklist": [],
+          "children": [],
+          "also_under": []
+        },
+        {
+          "id": "T4.2",
+          "title": "3 pieces, one repo",
+          "status": "done",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Each piece can use its own tech; they talk through messages.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T4.2.1",
+              "title": "Watcher",
+              "status": "done",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Always running in the background, no window. Applies per-game settings when a game starts, undoes them when it closes.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T4.2.2",
+              "title": "Admin part",
+              "status": "done",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Installed once (password at install). Started by Linux at boot. Only accepts a short list of requests, like 'set power mode'.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T4.2.3",
+              "title": "Screens: GUI + terminal",
+              "status": "done",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Built together. Both show the same data.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T4.3",
+          "title": "GUI tech",
+          "status": "idea",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Open: Tauri (web page, easy themes) or Iced / Slint (lightest). Decide when we build the GUI.",
+          "checklist": [],
+          "children": [],
+          "also_under": []
+        },
+        {
+          "id": "T4.4",
+          "title": "Saving data",
+          "status": "done",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Everything stays on the PC.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T4.4.1",
+              "title": "Config files: TOML",
+              "status": "done",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "May revisit.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T4.4.2",
+              "title": "Data folder",
+              "status": "idea",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Open: ~/.ugh/ or ~/.config/ugh/ + ~/.local/share/ugh/.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T4.5",
+          "title": "Libraries",
+          "status": "done",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Allowed. Try writing it ourselves first, and ask before adding one.",
+          "checklist": [],
+          "children": [],
+          "also_under": []
+        },
+        {
+          "id": "T4.6",
+          "title": "Target systems",
+          "status": "done",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "All Linux. Priority: SteamOS, Bazzite, Pop!_OS, CachyOS, Ubuntu.",
+          "checklist": [],
+          "children": [
+            {
+              "id": "T4.6.1",
+              "title": "One app file",
+              "status": "done",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Runs without installing anything else, so it works on locked systems too.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            },
+            {
+              "id": "T4.6.2",
+              "title": "Packages: apt (PPA), AUR, Flatpak",
+              "status": "idea",
+              "color": null,
+              "lane": null,
+              "critical": false,
+              "priority": null,
+              "rank": null,
+              "deps": [],
+              "notes": "Later.",
+              "checklist": [],
+              "children": [],
+              "also_under": []
+            }
+          ],
+          "also_under": []
+        },
+        {
+          "id": "T4.7",
+          "title": "Speed goal",
+          "status": "idea",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "Watcher uses almost no CPU or memory and reacts to a game start within a fraction of a second.",
+          "checklist": [],
+          "children": [],
+          "also_under": []
+        },
+        {
+          "id": "T4.8",
+          "title": "Folder layout",
+          "status": "todo",
+          "color": null,
+          "lane": null,
+          "critical": false,
+          "priority": null,
+          "rank": null,
+          "deps": [],
+          "notes": "```\nUnixGamingHub/\n├── Cargo.toml        workspace: lists the crates\n├── crates/\n│   ├── ugh-core/     library: sensors, profiles, settings (shared by all)\n│   ├── ugh/          terminal program (ugh stats)\n│   ├── ugh-watcher/  always-running background program\n│   ├── ugh-admin/    admin part\n│   └── ugh-gui/      window (tech still open)\n├── overlay/          in-game overlay (maybe C++)\n├── scripts/          bash: install, packaging\n├── packaging/        deb, AUR, Flatpak files\n├── tempmon/          old monitor, reference only\n└── plan/             this plan\n```\nFolders get added when we reach them. Step 1 = Cargo.toml, ugh-core, ugh.",
+          "checklist": [],
+          "children": [],
+          "also_under": []
+        }
+      ],
+      "pos": {
+        "x": 968,
+        "y": -710
       }
     }
   ],
-  "decisions": [],
+  "decisions": [
+    {
+      "id": "D1",
+      "date": "2026-10-29",
+      "text": "First goal: read CPU and GPU sensors and show them with ugh stats in the terminal",
+      "why": "Small, works end to end, and almost every other feature needs these numbers",
+      "node": "T1.1.1"
+    },
+    {
+      "id": "D2",
+      "date": "2026-10-29",
+      "text": "GUI and terminal are built together, both showing the same data",
+      "why": "User wants both from the start",
+      "node": null
+    },
+    {
+      "id": "D3",
+      "date": "2026-10-29",
+      "text": "All data stays local on the PC",
+      "why": "User's rule: everything local",
+      "node": null
+    },
+    {
+      "id": "D4",
+      "date": "2026-10-29",
+      "text": "Libraries allowed, but try writing it ourselves first and ask before adding one",
+      "why": "User is fine with libraries; learning comes first",
+      "node": null
+    },
+    {
+      "id": "D5",
+      "date": "2026-10-29",
+      "text": "Runs on all Linux; priority SteamOS, Bazzite, Pop!_OS, CachyOS, Ubuntu. Ships as one app file, later via apt/AUR/Flatpak",
+      "why": "User's target list; locked distros need a self-contained app",
+      "node": null
+    },
+    {
+      "id": "D6",
+      "date": "2026-10-29",
+      "text": "Per-game profiles apply automatically when a game starts and undo when it closes",
+      "why": "User wants it to do everything on its own",
+      "node": null
+    },
+    {
+      "id": "D7",
+      "date": "2026-10-29",
+      "text": "Rust is the main language; other languages (web for the GUI, C++ for the overlay, bash for scripts) are allowed where they fit",
+      "why": "Fast and safe; the parts talk through messages, so each can use its own tech",
+      "node": null
+    },
+    {
+      "id": "D8",
+      "date": "2026-10-29",
+      "text": "UGH is 3 pieces in one repo: Watcher (always running), Admin part (installed once), Screens (GUI + terminal)",
+      "why": "Auto per-game profiles need something always watching; only a tiny part should have admin rights",
+      "node": null
+    },
+    {
+      "id": "D9",
+      "date": "2026-10-29",
+      "text": "Config files in TOML (may revisit)",
+      "why": "Easy to read and edit by hand",
+      "node": null
+    }
+  ],
   "activity": [
     {
       "at": "2026-10-29T14:26:26.910Z",
@@ -67,6 +2027,881 @@
       "at": "2026-10-29T14:30:01.219Z",
       "by": "user",
       "text": "new tree T1"
+    },
+    {
+      "at": "2026-10-29T15:13:22.769Z",
+      "by": "user",
+      "text": "added T1.1 under T1"
+    },
+    {
+      "at": "2026-10-29T15:13:24.171Z",
+      "by": "user",
+      "text": "added T1.1.1 under T1.1"
+    },
+    {
+      "at": "2026-10-29T15:13:24.547Z",
+      "by": "user",
+      "text": "added T1.1.1.1 under T1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:13:24.886Z",
+      "by": "user",
+      "text": "added T1.1.1.1.1 under T1.1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:13:26.245Z",
+      "by": "user",
+      "text": "added T1.1.1.1.2 under T1.1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:13:26.591Z",
+      "by": "user",
+      "text": "added T1.1.1.1.3 under T1.1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:13:26.877Z",
+      "by": "user",
+      "text": "added T1.1.1.1.4 under T1.1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:13:30.153Z",
+      "by": "user",
+      "text": "added T1.2 under T1"
+    },
+    {
+      "at": "2026-10-29T15:20:00.712Z",
+      "by": "user",
+      "text": "deleted T1.1.1 (+5 inside)"
+    },
+    {
+      "at": "2026-10-29T15:20:16.083Z",
+      "by": "user",
+      "text": "added T1.1.1 under T1.1"
+    },
+    {
+      "at": "2026-10-29T15:20:19.101Z",
+      "by": "user",
+      "text": "deleted T1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:20:20.210Z",
+      "by": "user",
+      "text": "added T1.3 under T1"
+    },
+    {
+      "at": "2026-10-29T15:22:11.714Z",
+      "by": "user",
+      "text": "added T1.4 under T1"
+    },
+    {
+      "at": "2026-10-29T15:24:51.113Z",
+      "by": "user",
+      "text": "added T1.5 under T1"
+    },
+    {
+      "at": "2026-10-29T15:25:53.738Z",
+      "by": "user",
+      "text": "added T1.5.1 under T1.5"
+    },
+    {
+      "at": "2026-10-29T15:25:55.698Z",
+      "by": "user",
+      "text": "deleted T1.5.1"
+    },
+    {
+      "at": "2026-10-29T15:25:56.384Z",
+      "by": "user",
+      "text": "added T1.6 under T1"
+    },
+    {
+      "at": "2026-10-29T15:26:24.186Z",
+      "by": "user",
+      "text": "added T1.7 under T1"
+    },
+    {
+      "at": "2026-10-29T15:26:25.991Z",
+      "by": "user",
+      "text": "deleted T1.7"
+    },
+    {
+      "at": "2026-10-29T15:26:26.829Z",
+      "by": "user",
+      "text": "added T1.1.1 under T1.1"
+    },
+    {
+      "at": "2026-10-29T15:27:37.001Z",
+      "by": "user",
+      "text": "added T1.1.1.1 under T1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:27:38.273Z",
+      "by": "user",
+      "text": "deleted T1.1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:27:40.385Z",
+      "by": "user",
+      "text": "added T1.1.2 under T1.1"
+    },
+    {
+      "at": "2026-10-29T15:27:46.172Z",
+      "by": "user",
+      "text": "added T1.1.3 under T1.1"
+    },
+    {
+      "at": "2026-10-29T15:44:23Z",
+      "by": "claude",
+      "text": "added Claude's ideas tree (T2) next to yours"
+    },
+    {
+      "at": "2026-10-29T15:52:38.653Z",
+      "by": "user",
+      "text": "deleted T1.4"
+    },
+    {
+      "at": "2026-10-29T15:52:41.137Z",
+      "by": "user",
+      "text": "detached T2.9 into its own tree"
+    },
+    {
+      "at": "2026-10-29T15:52:47.159Z",
+      "by": "user",
+      "text": "attached tree T2.9 under T2"
+    },
+    {
+      "at": "2026-10-29T15:54:04.121Z",
+      "by": "user",
+      "text": "pasted a copy of T2.9 as T1.4 under T1"
+    },
+    {
+      "at": "2026-10-29T15:54:44.856Z",
+      "by": "user",
+      "text": "pasted a copy of T2.5 as T1.7 under T1"
+    },
+    {
+      "at": "2026-10-29T15:55:09.882Z",
+      "by": "user",
+      "text": "added T1.8 under T1"
+    },
+    {
+      "at": "2026-10-29T15:55:11.545Z",
+      "by": "user",
+      "text": "deleted T1.8"
+    },
+    {
+      "at": "2026-10-29T15:55:13.357Z",
+      "by": "user",
+      "text": "added T1.2.1 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:55:18.084Z",
+      "by": "user",
+      "text": "added T1.2.2 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:55:32.215Z",
+      "by": "user",
+      "text": "added T1.2.3 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:55:38.952Z",
+      "by": "user",
+      "text": "added T1.2.4 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:55:44.044Z",
+      "by": "user",
+      "text": "added T1.2.5 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:55:48.114Z",
+      "by": "user",
+      "text": "added T1.2.6 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:55:54.208Z",
+      "by": "user",
+      "text": "deleted T1.2.6"
+    },
+    {
+      "at": "2026-10-29T15:56:03.501Z",
+      "by": "user",
+      "text": "pasted a copy of T2.5 as T1.2.6 under T1.2"
+    },
+    {
+      "at": "2026-10-29T15:57:24.157Z",
+      "by": "user",
+      "text": "deleted T1.1.1"
+    },
+    {
+      "at": "2026-10-29T15:57:24.581Z",
+      "by": "user",
+      "text": "deleted T1.1.2"
+    },
+    {
+      "at": "2026-10-29T15:57:24.834Z",
+      "by": "user",
+      "text": "deleted T1.1.3"
+    },
+    {
+      "at": "2026-10-29T15:57:26.221Z",
+      "by": "user",
+      "text": "added T1.1.1 under T1.1"
+    },
+    {
+      "at": "2026-10-29T15:57:50Z",
+      "by": "claude",
+      "text": "T2.6: notes"
+    },
+    {
+      "at": "2026-10-29T15:57:50Z",
+      "by": "claude",
+      "text": "added T2.6.3 under T2.6"
+    },
+    {
+      "at": "2026-10-29T15:57:50Z",
+      "by": "claude",
+      "text": "added T2.6.4 under T2.6"
+    },
+    {
+      "at": "2026-10-29T15:57:50Z",
+      "by": "claude",
+      "text": "added T2.6.5 under T2.6"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "added T2.6.6 under T2.6"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "T2.6.3: notes"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "T2.6.4: notes"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "T2.6.5: notes"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "T2.6.6: notes"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "moved T2.6.1 under T2.6.4"
+    },
+    {
+      "at": "2026-10-29T15:57:51Z",
+      "by": "claude",
+      "text": "moved T2.6.2 under T2.6.4"
+    },
+    {
+      "at": "2026-10-29T15:57:57Z",
+      "by": "claude",
+      "text": "T2.6.2: notes"
+    },
+    {
+      "at": "2026-10-29T16:00:01.003Z",
+      "by": "user",
+      "text": "added T1.1.1.1 under T1.1.1"
+    },
+    {
+      "at": "2026-10-29T16:00:12.108Z",
+      "by": "user",
+      "text": "added T1.1.1.2 under T1.1.1"
+    },
+    {
+      "at": "2026-10-29T16:00:31.301Z",
+      "by": "user",
+      "text": "added T1.1.1.3 under T1.1.1"
+    },
+    {
+      "at": "2026-10-29T16:00:40.921Z",
+      "by": "user",
+      "text": "added T1.1.1.3.1 under T1.1.1.3"
+    },
+    {
+      "at": "2026-10-29T16:00:42.502Z",
+      "by": "user",
+      "text": "deleted T1.1.1.3.1"
+    },
+    {
+      "at": "2026-10-29T16:00:43.437Z",
+      "by": "user",
+      "text": "added T1.1.1.4 under T1.1.1"
+    },
+    {
+      "at": "2026-10-29T16:01:03.538Z",
+      "by": "user",
+      "text": "added T1.1.2 under T1.1"
+    },
+    {
+      "at": "2026-10-29T16:01:25.959Z",
+      "by": "user",
+      "text": "added T1.1.3 under T1.1"
+    },
+    {
+      "at": "2026-10-29T16:01:31.269Z",
+      "by": "user",
+      "text": "added T1.1.4 under T1.1"
+    },
+    {
+      "at": "2026-10-29T16:03:06.962Z",
+      "by": "user",
+      "text": "deleted T1.3"
+    },
+    {
+      "at": "2026-10-29T16:03:11.595Z",
+      "by": "user",
+      "text": "pasted a copy of T2.6 as T1.3 under T1"
+    },
+    {
+      "at": "2026-10-29T16:03:50.080Z",
+      "by": "user",
+      "text": "added T1.2.6.4.1 under T1.2.6.4"
+    },
+    {
+      "at": "2026-10-29T16:03:57.699Z",
+      "by": "user",
+      "text": "deleted T1.2.6.4.1"
+    },
+    {
+      "at": "2026-10-29T16:04:45.537Z",
+      "by": "user",
+      "text": "T1.2.6.4 now depends on T1.3"
+    },
+    {
+      "at": "2026-10-29T16:05:02.574Z",
+      "by": "user",
+      "text": "added T1.2.6.5 under T1.2.6"
+    },
+    {
+      "at": "2026-10-29T16:05:47.703Z",
+      "by": "user",
+      "text": "added T1.6.1 under T1.6"
+    },
+    {
+      "at": "2026-10-29T16:05:51.566Z",
+      "by": "user",
+      "text": "added T1.6.2 under T1.6"
+    },
+    {
+      "at": "2026-10-29T16:06:07.031Z",
+      "by": "user",
+      "text": "added T1.6.2.1 under T1.6.2"
+    },
+    {
+      "at": "2026-10-29T16:06:11.046Z",
+      "by": "user",
+      "text": "added T1.6.2.2 under T1.6.2"
+    },
+    {
+      "at": "2026-10-29T16:06:18.787Z",
+      "by": "user",
+      "text": "added T1.6.3 under T1.6"
+    },
+    {
+      "at": "2026-10-29T16:06:25.031Z",
+      "by": "user",
+      "text": "added T1.6.2.3 under T1.6.2"
+    },
+    {
+      "at": "2026-10-29T16:06:55.756Z",
+      "by": "user",
+      "text": "pasted a copy of T1.6.2.3 as T1.6.3.1 under T1.6.3"
+    },
+    {
+      "at": "2026-10-29T16:06:57.271Z",
+      "by": "user",
+      "text": "pasted a copy of T1.6.2.2 as T1.6.3.2 under T1.6.3"
+    },
+    {
+      "at": "2026-10-29T16:06:59.387Z",
+      "by": "user",
+      "text": "pasted a copy of T1.6.2.1 as T1.6.3.3 under T1.6.3"
+    },
+    {
+      "at": "2026-10-29T16:07:34.461Z",
+      "by": "user",
+      "text": "deleted T1.7 (+4 inside)"
+    },
+    {
+      "at": "2026-10-29T16:08:55.892Z",
+      "by": "user",
+      "text": "T1.2.6.5 now depends on T1.6"
+    },
+    {
+      "at": "2026-10-29T16:09:14.977Z",
+      "by": "user",
+      "text": "pasted a copy of T2.2 as T1.7 under T1"
+    },
+    {
+      "at": "2026-10-29T16:09:32.243Z",
+      "by": "user",
+      "text": "detached T1.7 into its own tree"
+    },
+    {
+      "at": "2026-10-29T16:09:36.537Z",
+      "by": "user",
+      "text": "deleted T1.7 (+4 inside)"
+    },
+    {
+      "at": "2026-10-29T16:09:40.680Z",
+      "by": "user",
+      "text": "pasted a copy of T2.2 as T3 (new tree)"
+    },
+    {
+      "at": "2026-10-29T16:13:48.923Z",
+      "by": "user",
+      "text": "attached tree T3 under T1"
+    },
+    {
+      "at": "2026-10-29T16:14:35.050Z",
+      "by": "user",
+      "text": "added T1.6.4 under T1.6"
+    },
+    {
+      "at": "2026-10-29T16:14:38.224Z",
+      "by": "user",
+      "text": "added T1.6.4.1 under T1.6.4"
+    },
+    {
+      "at": "2026-10-29T16:14:45.367Z",
+      "by": "user",
+      "text": "added T1.6.4.2 under T1.6.4"
+    },
+    {
+      "at": "2026-10-29T16:14:50.208Z",
+      "by": "user",
+      "text": "added T1.6.4.3 under T1.6.4"
+    },
+    {
+      "at": "2026-10-29T16:14:51.636Z",
+      "by": "user",
+      "text": "deleted T1.6.4.3"
+    },
+    {
+      "at": "2026-10-29T16:15:27.059Z",
+      "by": "user",
+      "text": "added T1.5.1 under T1.5"
+    },
+    {
+      "at": "2026-10-29T16:15:34.710Z",
+      "by": "user",
+      "text": "added T1.5.2 under T1.5"
+    },
+    {
+      "at": "2026-10-29T16:15:40.512Z",
+      "by": "user",
+      "text": "added T1.5.3 under T1.5"
+    },
+    {
+      "at": "2026-10-29T16:15:48.437Z",
+      "by": "user",
+      "text": "added T1.5.2.1 under T1.5.2"
+    },
+    {
+      "at": "2026-10-29T16:18:31.460Z",
+      "by": "user",
+      "text": "T1.5.2.1 is now also under T1.2.6.1"
+    },
+    {
+      "at": "2026-10-29T16:18:34.044Z",
+      "by": "user",
+      "text": "T1.5.2.1 is no longer under T1.2.6.1"
+    },
+    {
+      "at": "2026-10-29T16:18:42.655Z",
+      "by": "user",
+      "text": "T1.5.2.1 is now also under T1.5.1"
+    },
+    {
+      "at": "2026-10-29T16:18:53.949Z",
+      "by": "user",
+      "text": "T1.5.2.1 is now also under T1.5.3"
+    },
+    {
+      "at": "2026-10-29T16:20:34.019Z",
+      "by": "user",
+      "text": "added T1.5.4 under T1.5"
+    },
+    {
+      "at": "2026-10-29T16:22:12.918Z",
+      "by": "user",
+      "text": "added T1.7 under T1"
+    },
+    {
+      "at": "2026-10-29T16:22:26.247Z",
+      "by": "user",
+      "text": "added T1.7.1 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:22:27.933Z",
+      "by": "user",
+      "text": "added T1.7.2 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:22:30.002Z",
+      "by": "user",
+      "text": "added T1.7.3 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:22:34.887Z",
+      "by": "user",
+      "text": "added T1.7.4 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:22:45.045Z",
+      "by": "user",
+      "text": "added T1.7.5 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:22:47.430Z",
+      "by": "user",
+      "text": "deleted T1.7.5"
+    },
+    {
+      "at": "2026-10-29T16:24:59.717Z",
+      "by": "user",
+      "text": "new tree T4"
+    },
+    {
+      "at": "2026-10-29T16:25:25.490Z",
+      "by": "user",
+      "text": "T4 → blocked"
+    },
+    {
+      "at": "2026-10-29T16:25:27.480Z",
+      "by": "user",
+      "text": "T4 → todo"
+    },
+    {
+      "at": "2026-10-29T16:26:16Z",
+      "by": "claude",
+      "text": "T1.1.1.1: priority → now"
+    },
+    {
+      "at": "2026-10-29T16:26:16Z",
+      "by": "claude",
+      "text": "T1.1.1.2: priority → now"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "T3.1: priority → now"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "decided: First goal: read CPU and GPU sensors and show them with ugh stats in the termina"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "added T1.8 under T1"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "added T1.7.5 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "added T1.7.6 under T1.7"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "T1.7: notes"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "T1.7.2: notes"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "T1.6.2.1: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:17Z",
+      "by": "claude",
+      "text": "T1.6.2.2: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.6.3.2: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.6.3.3: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.2.3: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.5.3: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.4.2: status → idea"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.6.2.2: notes"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.6.3.2: notes"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "moved T1.1.4 under T1.1.2"
+    },
+    {
+      "at": "2026-10-29T16:26:18Z",
+      "by": "claude",
+      "text": "T1.5: title → Customisation"
+    },
+    {
+      "at": "2026-10-29T16:26:19Z",
+      "by": "claude",
+      "text": "T1.5.3: title → Plugins & Scripts"
+    },
+    {
+      "at": "2026-10-29T16:26:19Z",
+      "by": "claude",
+      "text": "T1.2.6.4: title → RGB Lighting"
+    },
+    {
+      "at": "2026-10-29T16:26:39Z",
+      "by": "claude",
+      "text": "T1.7: notes"
+    },
+    {
+      "at": "2026-10-29T16:26:39Z",
+      "by": "claude",
+      "text": "T1.7.2: notes"
+    },
+    {
+      "at": "2026-10-29T16:26:40Z",
+      "by": "claude",
+      "text": "moved T1.7.5 under T1.8"
+    },
+    {
+      "at": "2026-10-29T16:26:40Z",
+      "by": "claude",
+      "text": "moved T1.7.6 under T1.8"
+    },
+    {
+      "at": "2026-10-29T16:26:40Z",
+      "by": "claude",
+      "text": "T1.8: title → Background helper, notes"
+    },
+    {
+      "at": "2026-10-29T16:26:52Z",
+      "by": "claude",
+      "text": "deleted T1.7.5"
+    },
+    {
+      "at": "2026-10-29T16:26:52Z",
+      "by": "claude",
+      "text": "deleted T1.7.6"
+    },
+    {
+      "at": "2026-10-29T16:26:52Z",
+      "by": "claude",
+      "text": "added T1.8.1 under T1.8"
+    },
+    {
+      "at": "2026-10-29T16:26:52Z",
+      "by": "claude",
+      "text": "added T1.8.2 under T1.8"
+    },
+    {
+      "at": "2026-10-29T16:26:53Z",
+      "by": "claude",
+      "text": "T1.8.2: notes"
+    },
+    {
+      "at": "2026-10-29T16:28:01Z",
+      "by": "claude",
+      "text": "added how-to boxes for the first goal and the Tech-Specs tree (T4)"
+    },
+    {
+      "at": "2026-10-29T16:34:38Z",
+      "by": "claude",
+      "text": "deleted T1.8 (+2 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:38Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.1.1"
+    },
+    {
+      "at": "2026-10-29T16:34:38Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.1.2"
+    },
+    {
+      "at": "2026-10-29T16:34:38Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.1.3"
+    },
+    {
+      "at": "2026-10-29T16:34:38Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.1.4"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.2.1"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.2.2"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T1.1.1.2.3"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T3.1.1"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T3.1.2"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T3.1.3"
+    },
+    {
+      "at": "2026-10-29T16:34:39Z",
+      "by": "claude",
+      "text": "deleted T4.1 (+2 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.2 (+4 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.3 (+4 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.4 (+6 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.5 (+2 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.6 (+3 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.7 (+1 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:40Z",
+      "by": "claude",
+      "text": "deleted T4.8 (+2 inside)"
+    },
+    {
+      "at": "2026-10-29T16:34:41Z",
+      "by": "claude",
+      "text": "T4: status → todo"
+    },
+    {
+      "at": "2026-10-29T16:34:41Z",
+      "by": "claude",
+      "text": "T4: notes"
+    },
+    {
+      "at": "2026-10-29T17:06:59Z",
+      "by": "claude",
+      "text": "decided: GUI and terminal are built together, both showing the same data"
+    },
+    {
+      "at": "2026-10-29T17:07:00Z",
+      "by": "claude",
+      "text": "decided: All data stays local on the PC"
+    },
+    {
+      "at": "2026-10-29T17:07:00Z",
+      "by": "claude",
+      "text": "decided: Libraries allowed, but try writing it ourselves first and ask before adding one"
+    },
+    {
+      "at": "2026-10-29T17:07:00Z",
+      "by": "claude",
+      "text": "decided: Runs on all Linux; priority SteamOS, Bazzite, Pop!_OS, CachyOS, Ubuntu. Ships as"
+    },
+    {
+      "at": "2026-10-29T17:07:00Z",
+      "by": "claude",
+      "text": "decided: Per-game profiles apply automatically when a game starts and undo when it closes"
+    },
+    {
+      "at": "2026-10-29T17:18:18Z",
+      "by": "claude",
+      "text": "decided: Rust is the main language; other languages (web for the GUI, C++ for the overlay"
+    },
+    {
+      "at": "2026-10-29T17:18:18Z",
+      "by": "claude",
+      "text": "decided: UGH is 3 pieces in one repo: Watcher (always running), Admin part (installed onc"
+    },
+    {
+      "at": "2026-10-29T17:18:18Z",
+      "by": "claude",
+      "text": "decided: Config files in TOML (may revisit)"
+    },
+    {
+      "at": "2026-10-29T17:19:49Z",
+      "by": "claude",
+      "text": "filled T4 Tech-Specs with the agreed decisions"
+    },
+    {
+      "at": "2026-10-29T17:21:17Z",
+      "by": "claude",
+      "text": "added T4.8 Folder layout"
     }
   ]
 }

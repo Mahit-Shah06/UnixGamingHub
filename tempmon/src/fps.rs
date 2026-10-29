@@ -11,6 +11,7 @@ const STALE_MS: f64 = 3000.0;
 pub struct WinFps {
     pub app: String,
     pub class: String,
+    pub title: String,
     pub pid: i64,
     pub fps: f64,
     pub focused: bool,
@@ -18,7 +19,14 @@ pub struct WinFps {
 
 impl WinFps {
     pub fn name(&self) -> &str {
-        if self.app.is_empty() { &self.class } else { &self.app }
+        // Proton games have no .desktop match, so the tracker reports "steam_app_<id>"
+        if self.app.starts_with("steam_app_") && !self.title.is_empty() {
+            &self.title
+        } else if self.app.is_empty() {
+            &self.class
+        } else {
+            &self.app
+        }
     }
 }
 
@@ -52,6 +60,7 @@ impl FpsProbe {
             self.windows.push(WinFps {
                 app: s(w, "app"),
                 class: s(w, "class"),
+                title: s(w, "title"),
                 pid: w["pid"].as_i64().unwrap_or(0),
                 fps: w["fps"].as_f64().unwrap_or(0.0),
                 focused: w["focused"].as_bool().unwrap_or(false),

@@ -1,5 +1,5 @@
 fn main() {
-   match ugh_core::sensors::sensor_names() {
+   match ugh_core::hwmon::find_sensors() {
        Some(sensors) => {
            loop{
                print!("\x1B[H\x1B[2J\x1B[3J");

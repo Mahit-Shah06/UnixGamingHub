@@ -6,3 +6,4 @@ pub mod memory;
 pub mod network;
 pub mod disks;
 pub mod paths;
+pub mod hwmon;

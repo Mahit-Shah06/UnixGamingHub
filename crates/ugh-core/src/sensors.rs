@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use crate::names::{friendly_name, friendly_label, name_gpus, number_drives, device_rank};
+use crate::paths::HWMON;
 
 const TYPES: [(&str, f64, &str); 5] = [
     ("temp", 1000.0, "°C"),
@@ -9,7 +10,6 @@ const TYPES: [(&str, f64, &str); 5] = [
     ("fan", 1.0, "RPM"),
     ("in", 1000.0, "V"),
 ];
-const DEVICE_DIR: &str = "/sys/class/hwmon";
 
 pub struct Sensor {
     pub label: String,
@@ -22,7 +22,7 @@ pub struct Sensor {
 pub fn sensor_names() -> Option<Vec<Sensor>> {
     let mut sensors = Vec::new();
 
-    for entry in fs::read_dir(DEVICE_DIR).ok()? {
+    for entry in fs::read_dir(HWMON).ok()? {
         let Ok(entry) = entry else {continue};
         let folder = entry.path();
 
@@ -41,7 +41,12 @@ pub fn sensor_names() -> Option<Vec<Sensor>> {
             if file_name.ends_with("_input") || file_name.ends_with("_average") {
                 for (prefix, scale, unit) in TYPES {
                     if file_name.starts_with(prefix) {
-                        sensors.push(Sensor {label: label.clone(), device: device.clone(), path: path.clone(), scale, unit });
+                        sensors.push(Sensor 
+                            {label: label.clone(),
+                            device: device.clone(),
+                            path: path.clone(),
+                            scale, unit }
+                        );
                         break;
                     }
                 }

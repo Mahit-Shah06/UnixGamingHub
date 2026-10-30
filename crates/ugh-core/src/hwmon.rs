@@ -1,5 +1,5 @@
 use std::fs;
-use crate::sensors::Sensor;
+use crate::sensors::{Sensor, readMethod};
 use crate::names::{friendly_name, friendly_label, name_gpus, number_drives, device_rank};
 use crate::paths::HWMON;
 
@@ -37,7 +37,8 @@ pub fn find_sensors() -> Option<Vec<Sensor>> {
                             {label: label.clone(),
                             device: device.clone(),
                             path: path.clone(),
-                            scale, unit }
+                            Method: readMethod::File { scale },
+                            unit }
                         );
                         break;
                     }
